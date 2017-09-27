@@ -1,6 +1,9 @@
 const sax = require('sax');
 const slimdom = require('slimdom');
 
+/*
+ * Create the required callbacks for populating a new document from sax event handlers
+ */
 function createHandler () {
 	const doc = new slimdom.Document();
 	let dom = doc;
@@ -50,10 +53,14 @@ function createHandler () {
 	};
 }
 
+/*
+ * Export the API of slimdom-sax-parser
+ */
 module.exports = {
 	slimdom,
 
 	/**
+	 * Synchronously parse a string of XML to a Slimdom document
 	 * @param {string} xml
 	 * @param {Boolean} [strict]
 	 * @param {Object} [options]
@@ -72,7 +79,7 @@ module.exports = {
 		parser.ondoctype = handler.onDocType;
 
 		// Parse and return
-		parser.write(xml).close();
+		parser.write(xml.trim()).close();
 		return handler.getDocument();
 	}
 };

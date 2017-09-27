@@ -2,10 +2,15 @@
 
 > Parses XML to a Slimdom document using Sax
 
+Relies heavily on the following libs:
+
+- https://www.npmjs.com/package/slimdom
+- https://www.npmjs.com/package/sax
+
 Limited functionality for now:
 
 - Only synchronously
-- Only elements, attributes and text nodes
+- Only elements, attributes and text nodes, processing instructions, comments and (public) doctype declarations
 
 ## API
 

@@ -1,0 +1,32 @@
+{
+  "name": "slimdom-sax-parser",
+  "version": "1.0.0",
+  "description": "Parses XML to a Slimdom document using Sax",
+  "repository": "wvbe/slimdom-sax-parser",
+  "author": {
+    "name": "Wybe Minnebo",
+    "email": "wybe@x-54.com",
+    "url": "https://github.com/wvbe"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/wvbe/slimdom-sax-parser",
+  "keywords": [
+    "xml",
+    "parse",
+    "sax",
+    "slimdom",
+    "jsdom",
+    "dom"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "sax": "^1.2.4",
+    "slimdom": "^2.1.0"
+  },
+  "devDependencies": {
+    "jest": "^21.2.0"
+  }
+}

@@ -7,6 +7,7 @@ const slimdom = require('slimdom');
 function createHandler () {
 	const doc = new slimdom.Document();
 	let dom = doc;
+	let cdata = null;
 
 	return {
 		onText: (text) => {
@@ -47,6 +48,17 @@ function createHandler () {
 			));
 		},
 
+		onOpenCdata: () => {
+			cdata = '';
+		},
+		onCdata: (string) => {
+			cdata += string;
+		},
+		onCloseCdata: () => {
+			dom.appendChild(doc.createCDATASection(cdata));
+			cdata = null;
+		},
+
 		getDocument: () => {
 			return doc;
 		}
@@ -77,6 +89,9 @@ module.exports = {
 		parser.onprocessinginstruction = handler.onProcessingInstruction;
 		parser.oncomment = handler.onComment;
 		parser.ondoctype = handler.onDocType;
+		parser.onopencdata = handler.onOpenCdata;
+		parser.oncdata = handler.onCdata;
+		parser.onclosecdata = handler.onCloseCdata;
 
 		// Parse and return
 		parser.write(xml.trim()).close();

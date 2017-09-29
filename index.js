@@ -68,33 +68,31 @@ function createHandler () {
 /*
  * Export the API of slimdom-sax-parser
  */
-module.exports = {
-	slimdom,
+exports.slimdom = slimdom;
 
-	/**
-	 * Synchronously parse a string of XML to a Slimdom document
-	 * @param {string} xml
-	 * @param {Boolean} [strict]
-	 * @param {Object} [options]
-	 * @returns {slimdom.Document}
-	 */
-	sync: function synchronousSlimdomSaxParser (xml, strict, options) {
-		const handler = createHandler();
+/**
+ * Synchronously parse a string of XML to a Slimdom document
+ * @param {string} xml
+ * @param {Boolean} [strict]
+ * @param {Object} [options]
+ * @returns {slimdom.Document}
+ */
+exports.sync = function synchronousSlimdomSaxParser (xml, strict, options) {
+	const handler = createHandler();
 
-		// Set up the sax parser
-		const parser = sax.parser(strict, options);
-		parser.ontext = handler.onText;
-		parser.onopentag = handler.onOpenTag;
-		parser.onclosetag = handler.onCloseTag;
-		parser.onprocessinginstruction = handler.onProcessingInstruction;
-		parser.oncomment = handler.onComment;
-		parser.ondoctype = handler.onDocType;
-		parser.onopencdata = handler.onOpenCdata;
-		parser.oncdata = handler.onCdata;
-		parser.onclosecdata = handler.onCloseCdata;
+	// Set up the sax parser
+	const parser = sax.parser(strict, options);
+	parser.ontext = handler.onText;
+	parser.onopentag = handler.onOpenTag;
+	parser.onclosetag = handler.onCloseTag;
+	parser.onprocessinginstruction = handler.onProcessingInstruction;
+	parser.oncomment = handler.onComment;
+	parser.ondoctype = handler.onDocType;
+	parser.onopencdata = handler.onOpenCdata;
+	parser.oncdata = handler.onCdata;
+	parser.onclosecdata = handler.onCloseCdata;
 
-		// Parse and return
-		parser.write(xml.trim()).close();
-		return handler.getDocument();
-	}
+	// Parse and return
+	parser.write(xml.trim()).close();
+	return handler.getDocument();
 };

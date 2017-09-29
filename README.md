@@ -10,7 +10,7 @@ Relies heavily on the following libs:
 Limited functionality for now:
 
 - Only synchronously
-- Only elements, attributes and text nodes, processing instructions, comments and (public) doctype declarations
+- Only elements, attributes and text nodes, processing instructions, comments, (public) doctype declarations and CDATA
 
 ## API
 

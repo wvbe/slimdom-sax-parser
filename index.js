@@ -11,6 +11,9 @@ function createHandler () {
 
 	return {
 		onText: (text) => {
+			if (dom.nodeType === slimdom.Node.DOCUMENT_NODE) {
+				return;
+			}
 			dom.appendChild(doc.createTextNode(text));
 		},
 
@@ -93,6 +96,6 @@ exports.sync = function synchronousSlimdomSaxParser (xml, strict, options) {
 	parser.onclosecdata = handler.onCloseCdata;
 
 	// Parse and return
-	parser.write(xml.trim()).close();
+	parser.write(xml).close();
 	return handler.getDocument();
 };

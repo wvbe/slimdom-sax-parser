@@ -20,8 +20,8 @@ const doc = sync([
 	`<!-- comment -->`,
 	`<root attr="val">`,
 		`<contains-text>text</contains-text>`,
-		`<a:root xmlns:a="http://a" xmlns:b="http://b" a:attr="A" b:attr="B">`,
-			`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" />`,
+		`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
+			`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
 			`<a:next-sibling a:attr="AAA" />`,
 		`</a:root>`,
 		`<![CDATA[cdata]]>`,
@@ -73,6 +73,9 @@ it('attributes', () => {
 it('namespaced elements', () => {
 	const subject = doc.documentElement.firstChild.nextSibling;
 
+	expect(() => sync(`<xml un:declared="test" />`))
+		.toThrow('Namespace prefix "un" not known for attribute "un:declared"');
+
 	expect(subject.nodeType).toBe(types.ELEMENT_NODE);
 
 	expect(subject.nodeName).toBe('a:root');
@@ -81,7 +84,8 @@ it('namespaced elements', () => {
 
 it('namespaced attributes', () => {
 	const subject = doc.documentElement.firstChild.nextSibling; // <a:root>
-
+	expect(subject.getAttributeNS('http://default', 'attr')).toBe('def');
+	expect(subject.getAttribute('attr')).toBe('def');
 	expect(subject.getAttributeNS('http://a', 'attr')).toBe('A');
 	expect(subject.getAttributeNS('http://b', 'attr')).toBe('B');
 
@@ -90,6 +94,7 @@ it('namespaced attributes', () => {
 	expect(subject.firstChild.localName).toBe('child');
 	expect(subject.firstChild.getAttributeNS('http://a', 'attr')).toBe('A');
 	expect(subject.firstChild.getAttributeNS('http://b', 'attr')).toBe('B');
+	expect(subject.firstChild.getAttributeNS('http://d', 'attr')).toBe('d');
 
 	expect(subject.firstChild.nextSibling.getAttributeNS('http://a', 'attr')).toBe('AAA');
 });

@@ -10,12 +10,10 @@ Relies heavily on the following libs:
 Limited functionality for now:
 
 - Only synchronously
-- Only elements, attributes and text nodes, processing instructions, comments, (public) doctype declarations and CDATA
+- Only (namespaced) elements, (namespaced) attributes and text nodes, processing instructions, comments and CDATA.
 
-## API
+## It's extremely easy to use
 
 ```
-sync (xml: string, [strict: boolean, options: object]) : Document
+sync (xml: string) : Document
 ```
-
-For the `strict` and `options` arguments, please see the sax documentation: https://www.npmjs.com/package/sax

@@ -1,6 +1,10 @@
 const sax = require('sax');
 const slimdom = require('slimdom');
 
+const defaultNamespaceMapping = {
+	'': null
+};
+
 /*
  * Create the required callbacks for populating a new document from sax event handlers
  */
@@ -13,8 +17,8 @@ function createHandler () {
 	// Rewritten to accumulate a text stream
 	let cdata = null;
 
-	const namespaces = [{ '': null }];
-	let currentNamespaces = { '': null };
+	const namespaces = [defaultNamespaceMapping];
+	let currentNamespaces = Object.create(defaultNamespaceMapping);
 
 	return {
 		onText: (text) => {
@@ -38,13 +42,13 @@ function createHandler () {
 			// Set attributes, taking the accumulated namespace information into account
 			Object.keys(node.attributes)
 				.map(name => node.attributes[name])
-				.filter(attr => attr.prefix !== 'xmlns')
+				.filter(attr => attr.prefix !== 'xmlns' && !(attr.prefix === '' && attr.name === 'xmlns'))
 				.forEach(attr => {
 					if (currentNamespaces[attr.prefix] === undefined) {
 						throw new Error(`Namespace prefix "${attr.prefix}" not known for attribute "${attr.name}"`);
 					}
 
-					dom.setAttributeNS(currentNamespaces[attr.prefix], attr.name, attr.value);
+					dom.setAttributeNS(attr.prefix === '' ? null : currentNamespaces[attr.prefix], attr.name, attr.value);
 			});
 		},
 

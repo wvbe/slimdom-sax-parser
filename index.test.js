@@ -84,7 +84,8 @@ it('namespaced elements', () => {
 
 it('namespaced attributes', () => {
 	const subject = doc.documentElement.firstChild.nextSibling; // <a:root>
-	expect(subject.getAttributeNS('http://default', 'attr')).toBe('def');
+
+	expect(subject.getAttributeNS('http://default', 'attr')).toBeNull();
 	expect(subject.getAttribute('attr')).toBe('def');
 	expect(subject.getAttributeNS('http://a', 'attr')).toBe('A');
 	expect(subject.getAttributeNS('http://b', 'attr')).toBe('B');
@@ -98,4 +99,13 @@ it('namespaced attributes', () => {
 
 	expect(subject.firstChild.nextSibling.getAttributeNS('http://a', 'attr')).toBe('AAA');
 });
+it('be gentle', () => {
 
+	const doc = sync(`<root xmlns="http://derp" blyat="kurwa" />`);
+
+	const subject = doc.documentElement; // <a:root>
+
+	expect(subject.getAttributeNS(null, 'blyat')).toBe('kurwa');
+	expect(subject.getAttribute('blyat')).toBe('kurwa');
+	expect(subject.hasAttribute('ns0:blyat')).toBe(false);
+});

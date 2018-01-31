@@ -1,16 +1,9 @@
 # slimdom-sax-parser
 
-> Parses XML to a Slimdom document using Sax
+> Parses XML to a [slimdom](https://www.npmjs.com/package/slimdom) document using (sax)[https://www.npmjs.com/package/sax]
 
-Relies heavily on the following libs:
-
-- https://www.npmjs.com/package/slimdom
-- https://www.npmjs.com/package/sax
-
-Limited functionality for now:
-
-- Only synchronously
-- Only (namespaced) elements, (namespaced) attributes and text nodes, processing instructions, comments and CDATA.
+- (Namespaced) elements, (namespaced) attributes and text nodes, processing instructions, comments and CDATA.
+- Interprets catalog.xml system, group and nextCatalog tags.
 
 ## It's extremely easy to use
 

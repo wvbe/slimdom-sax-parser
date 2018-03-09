@@ -2,7 +2,8 @@ const sax = require('sax');
 const slimdom = require('slimdom');
 
 const defaultNamespaceMapping = {
-	'': null
+	'': null,
+	'xml': 'http://www.w3.org/XML/1998/namespace'
 };
 
 /*

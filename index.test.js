@@ -109,3 +109,12 @@ it('be gentle', () => {
 	expect(subject.getAttribute('blyat')).toBe('kurwa');
 	expect(subject.hasAttribute('ns0:blyat')).toBe(false);
 });
+
+it('knows the always-defined xml namespace', () => {
+	const doc = sync(`<root xml:lang="pl" />`);
+
+	const subject = doc.documentElement; // <a:root>
+
+	expect(subject.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')).toBe('pl');
+	expect(subject.getAttribute('xml:lang')).toBe('pl');
+});

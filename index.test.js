@@ -16,7 +16,10 @@ const types = {
 };
 
 const doc = sync([
-	`<?DOCTYPE html?>`,
+	// Note that the following line is an XML version declaration. Not a PI (https://github.com/isaacs/sax-js/issues/178)
+	`<?xml version="1.0"?>`,
+	`<!DOCTYPE something PUBLIC "-//example doctype//EN" "http://www.example.org/ns">`,
+	`<?pi-target pi-data?>`,
 	`<!-- comment -->`,
 	`<root attr="val">`,
 		`<contains-text>text</contains-text>`,
@@ -28,17 +31,26 @@ const doc = sync([
 	`</root>`
 ].join(''), true);
 
-it('processing instructions', () => {
+it('doc types', () => {
 	const subject = doc.firstChild;
+
+	expect(subject.nodeType).toBe(types.DOCUMENT_TYPE_NODE);
+	expect(subject.name).toBe('something');
+	expect(subject.publicId).toBe('-//example doctype//EN');
+	expect(subject.systemId).toBe('http://www.example.org/ns');
+});
+
+it('processing instructions', () => {
+	const subject = doc.firstChild.nextSibling;
 
 	expect(subject.nodeType).toBe(types.PROCESSING_INSTRUCTION_NODE);
 
-	expect(subject.target).toBe('DOCTYPE');
-	expect(subject.nodeValue).toBe('html');
+	expect(subject.target).toBe('pi-target');
+	expect(subject.nodeValue).toBe('pi-data');
 });
 
 it('comments', () => {
-	const subject = doc.firstChild.nextSibling;
+	const subject = doc.firstChild.nextSibling.nextSibling;
 
 	expect(subject.nodeType).toBe(types.COMMENT_NODE);
 });

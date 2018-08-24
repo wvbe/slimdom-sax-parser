@@ -66,6 +66,9 @@ function createHandler () {
 		},
 
 		onProcessingInstruction: (pi) => {
+			if (pi.name === 'xml' && dom.nodeType === dom.DOCUMENT_NODE) {
+				return;
+			}
 			dom.appendChild(doc.createProcessingInstruction(pi.name, pi.body));
 		},
 

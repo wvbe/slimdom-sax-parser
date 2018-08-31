@@ -1,6 +1,6 @@
 # slimdom-sax-parser
 
-> Parses XML to a [slimdom](https://www.npmjs.com/package/slimdom) document using [sax](https://www.npmjs.com/package/sax).
+> Parses XML to a [slimdom](https://www.npmjs.com/package/slimdom) document using [saxes](https://www.npmjs.com/package/saxes).
 
 Works in browsers and NodeJS. Includes (namespaced) elements, (namespaced) attributes, processing instructions, comments and CDATA.
 

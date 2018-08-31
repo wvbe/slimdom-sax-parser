@@ -1,4 +1,4 @@
-const sax = require('sax');
+const saxes = require('saxes');
 const slimdom = require('slimdom');
 
 const defaultNamespaceMapping = {
@@ -14,9 +14,6 @@ function createHandler () {
 
 	// Is rewritten as the handler traverses in and out of nodes
 	let dom = doc;
-
-	// Rewritten to accumulate a text stream
-	let cdata = null;
 
 	const namespaces = [defaultNamespaceMapping];
 	let currentNamespaces = Object.create(defaultNamespaceMapping);
@@ -66,10 +63,10 @@ function createHandler () {
 		},
 
 		onProcessingInstruction: (pi) => {
-			if (pi.name === 'xml' && dom.nodeType === dom.DOCUMENT_NODE) {
+			if (pi.target === 'xml' && dom.nodeType === dom.DOCUMENT_NODE) {
 				return;
 			}
-			dom.appendChild(doc.createProcessingInstruction(pi.name, pi.body));
+			dom.appendChild(doc.createProcessingInstruction(pi.target, pi.body));
 		},
 
 		onComment: (comment) => {
@@ -91,17 +88,8 @@ function createHandler () {
 			));
 		},
 
-		onOpenCdata: () => {
-			cdata = '';
-		},
-
 		onCdata: (string) => {
-			cdata += string;
-		},
-
-		onCloseCdata: () => {
-			dom.appendChild(doc.createCDATASection(cdata));
-			cdata = null;
+			dom.appendChild(doc.createCDATASection(string));
 		},
 
 		getDocument: () => {
@@ -124,7 +112,7 @@ exports.sync = function synchronousSlimdomSaxParser (xml) {
 	const handler = createHandler();
 
 	// Set up the sax parser
-	const parser = sax.parser(true, {
+	const parser = new saxes.SaxesParser({
 		xmlns: true
 	});
 

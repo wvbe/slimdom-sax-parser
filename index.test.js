@@ -86,7 +86,7 @@ it('namespaced elements', () => {
 	const subject = doc.documentElement.firstChild.nextSibling;
 
 	expect(() => sync(`<xml un:declared="test" />`))
-		.toThrow('Namespace prefix "un" not known for attribute "un:declared"');
+		.toThrow('unbound namespace prefix: "un".');
 
 	expect(subject.nodeType).toBe(types.ELEMENT_NODE);
 

@@ -97,10 +97,15 @@ it('namespaced elements', () => {
 it('namespaced attributes', () => {
 	const subject = doc.documentElement.firstChild.nextSibling; // <a:root>
 
+	expect(subject.getAttributeNS(null, 'attr')).toBe('def');
 	expect(subject.getAttributeNS('http://default', 'attr')).toBeNull();
 	expect(subject.getAttribute('attr')).toBe('def');
 	expect(subject.getAttributeNS('http://a', 'attr')).toBe('A');
 	expect(subject.getAttributeNS('http://b', 'attr')).toBe('B');
+
+	// Declarations are attributes as well
+	expect(subject.getAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns')).toBe('http://default');
+	expect(subject.getAttributeNS('http://www.w3.org/2000/xmlns/', 'a')).toBe('http://a');
 
 	// Assert overriding namespace prefixes
 	expect(subject.firstChild.nodeName).toBe('a:child');

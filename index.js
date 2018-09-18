@@ -3,7 +3,8 @@ const slimdom = require('slimdom');
 
 const defaultNamespaceMapping = {
 	'': null,
-	'xml': 'http://www.w3.org/XML/1998/namespace'
+	'xml': 'http://www.w3.org/XML/1998/namespace',
+	'xmlns': 'http://www.w3.org/2000/xmlns/'
 };
 
 /*
@@ -40,13 +41,17 @@ function createHandler () {
 			// Set attributes, taking the accumulated namespace information into account
 			Object.keys(node.attributes)
 				.map(name => node.attributes[name])
-				.filter(attr => attr.prefix !== 'xmlns' && !(attr.prefix === '' && attr.name === 'xmlns'))
 				.forEach(attr => {
-					if (currentNamespaces[attr.prefix] === undefined) {
+					let namespaceURI = attr.prefix === '' ? null : currentNamespaces[attr.prefix];
+					// Default namespace declarations have no prefix but are in the XMLNS namespace
+					if (attr.prefix === '' && attr.name === 'xmlns') {
+						namespaceURI = currentNamespaces['xmlns'];
+					}
+					if (namespaceURI === undefined) {
 						throw new Error(`Namespace prefix "${attr.prefix}" not known for attribute "${attr.name}"`);
 					}
 
-					dom.setAttributeNS(attr.prefix === '' ? null : currentNamespaces[attr.prefix], attr.name, attr.value);
+					dom.setAttributeNS(namespaceURI, attr.name, attr.value);
 			});
 		},
 

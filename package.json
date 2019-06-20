@@ -23,8 +23,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "saxes": "^3.1.1",
-    "slimdom": "^2.1.0"
+    "saxes": "^3.1.10",
+    "slimdom": "^2.3.1"
   },
   "devDependencies": {
     "jest": "^21.2.0"

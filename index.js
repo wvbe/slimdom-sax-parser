@@ -1,81 +1,111 @@
 const saxes = require('saxes');
 const slimdom = require('slimdom');
 
-const defaultNamespaceMapping = {
+const DEFAULT_OPTIONS = {
+	xmlns: true,
+	position: false
+};
+
+const DEFAULT_NS_MAPPING = {
 	'': null,
 	'xml': 'http://www.w3.org/XML/1998/namespace',
 	'xmlns': 'http://www.w3.org/2000/xmlns/'
 };
 
+const types = {
+	ELEMENT_NODE: 1,
+	ATTRIBUTE_NODE: 2,
+	TEXT_NODE: 3,
+	CDATA_SECTION_NODE: 4,
+	ENTITY_REFERENCE_NODE: 5,
+	ENTITY_NODE: 6,
+	PROCESSING_INSTRUCTION_NODE: 7,
+	COMMENT_NODE: 8,
+	DOCUMENT_NODE: 9,
+	DOCUMENT_TYPE_NODE: 10,
+	DOCUMENT_FRAGMENT_NODE: 11,
+	NOTATION_NODE: 12
+};
 /*
  * Create the required callbacks for populating a new document from sax event handlers
  */
-function createHandler () {
+function createHandler(parser, options) {
 	const doc = new slimdom.Document();
 
 	// Is rewritten as the handler traverses in and out of nodes
-	let dom = doc;
+	let node = doc;
 
-	const namespaces = [defaultNamespaceMapping];
-	let currentNamespaces = Object.create(defaultNamespaceMapping);
+	const namespaces = [DEFAULT_NS_MAPPING];
+	let currentNamespaces = Object.create(DEFAULT_NS_MAPPING);
+
+	let lastTrackedPosition = {
+		line: 0, column: 0, offset: 0
+	}
+
+	const trackedPosition = options.position ?
+		node => {
+			const endPosition = { line: parser.line, column: parser.column, offset: parser.position };
+			if (node) {
+				node.position = {
+					start: { ...lastTrackedPosition },
+					end: {...endPosition}
+				};
+			}
+
+			lastTrackedPosition = endPosition;
+			return node;
+		} :
+		node => node;
 
 	return {
 		onText: (text) => {
-			if (dom.nodeType === slimdom.Node.DOCUMENT_NODE) {
-				// Do not add text directly to document node (aka. outside document element)
-				return;
-			}
-			dom.appendChild(doc.createTextNode(text));
+			node.appendChild(trackedPosition(doc.createTextNode(text)));
 		},
 
-		onOpenTag: (node) => {
-			namespaces.push(node.ns);
-			currentNamespaces = Object.assign(currentNamespaces, node.ns);
+		onOpenTag: (element) => {
+			// More namespace declarations might be applicable
+			namespaces.push(element.ns);
+			currentNamespaces = Object.assign(currentNamespaces, element.ns);
 
-			if (currentNamespaces[node.prefix] === undefined) {
-				throw new Error(`Namespace prefix "${node.prefix}" not known for element "${node.name}"`);
-			}
-
-			dom = dom.appendChild(doc.createElementNS(currentNamespaces[node.prefix], node.name));
+			const instance = trackedPosition(doc.createElementNS(currentNamespaces[element.prefix], element.name));
 
 			// Set attributes, taking the accumulated namespace information into account
-			Object.keys(node.attributes)
-				.map(name => node.attributes[name])
+			Object.keys(element.attributes)
+				.map(name => element.attributes[name])
 				.forEach(attr => {
 					let namespaceURI = attr.prefix === '' ? null : currentNamespaces[attr.prefix];
 					// Default namespace declarations have no prefix but are in the XMLNS namespace
 					if (attr.prefix === '' && attr.name === 'xmlns') {
 						namespaceURI = currentNamespaces['xmlns'];
 					}
-					if (namespaceURI === undefined) {
-						throw new Error(`Namespace prefix "${attr.prefix}" not known for attribute "${attr.name}"`);
-					}
 
-					dom.setAttributeNS(namespaceURI, attr.name, attr.value);
-			});
+					instance.setAttributeNS(namespaceURI, attr.name, attr.value);
+				});
+
+			node.appendChild(instance);
+			node = instance;
 		},
 
 		onCloseTag: () => {
-			dom = dom.parentNode;
+			node = node.parentNode;
 
-			if (!namespaces.pop()) {
-				// The namespace info for the level that is popped was empty, so exit early
-				return;
-			}
+			// Less namespace declarations might be applicable
+			namespaces.pop();
 
 			// Recalculate the (subset) portion of known namespace information
 			currentNamespaces = namespaces.reduce((accum, ns) => Object.assign(accum, ns), {});
 		},
 
 		onProcessingInstruction: (pi) => {
-			if (pi.target === 'xml' && dom.nodeType === dom.DOCUMENT_NODE) {
+			if (pi.target === 'xml' && node.nodeType === node.DOCUMENT_NODE) {
+				trackedPosition();
 				return;
 			}
-			dom.appendChild(doc.createProcessingInstruction(pi.target, pi.body));
+			node.appendChild(trackedPosition(doc.createProcessingInstruction(pi.target, pi.body)));
 		},
 
 		onComment: (comment) => {
-			dom.appendChild(doc.createComment(comment));
+			node.appendChild(trackedPosition(doc.createComment(comment)));
 		},
 
 		onDocType: (data) => {
@@ -86,15 +116,15 @@ function createHandler () {
 				systemId
 			] = data.match(/(?:[^\s"]+|"[^"]*")+/g);
 
-			dom.appendChild(doc.implementation.createDocumentType(
+			node.appendChild(trackedPosition(doc.implementation.createDocumentType(
 				qualifiedName,
 				publicId && publicId.replace(/^"(.*)"$/, '$1') || '',
 				systemId && systemId.replace(/^"(.*)"$/, '$1') || ''
-			));
+			)));
 		},
 
 		onCdata: (string) => {
-			dom.appendChild(doc.createCDATASection(string));
+			node.appendChild(trackedPosition(doc.createCDATASection(string)));
 		},
 
 		getDocument: () => {
@@ -113,13 +143,16 @@ exports.slimdom = slimdom;
  * @param {string} xml
  * @returns {slimdom.Document}
  */
-exports.sync = function synchronousSlimdomSaxParser (xml) {
-	const handler = createHandler();
+exports.sync = function synchronousSlimdomSaxParser(xml, options) {
+	options = {
+		...DEFAULT_OPTIONS,
+		...options
+	};
 
 	// Set up the sax parser
-	const parser = new saxes.SaxesParser({
-		xmlns: true
-	});
+	const parser = new saxes.SaxesParser(options);
+
+	const handler = createHandler(parser, options);
 
 	parser.ontext = handler.onText;
 	parser.onopentag = handler.onOpenTag;

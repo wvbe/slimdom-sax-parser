@@ -29,11 +29,10 @@ const doc = sync([
 		`</a:root>`,
 		`<![CDATA[cdata]]>`,
 	`</root>`
-].join(''), true);
+].join(''));
 
 it('doc types', () => {
 	const subject = doc.firstChild;
-
 	expect(subject.nodeType).toBe(types.DOCUMENT_TYPE_NODE);
 	expect(subject.name).toBe('something');
 	expect(subject.publicId).toBe('-//example doctype//EN');
@@ -82,56 +81,7 @@ it('attributes', () => {
 	expect(subject.getAttribute('attr')).toBe('val');
 });
 
-it('namespaced elements', () => {
-	const subject = doc.documentElement.firstChild.nextSibling;
-
-	expect(() => sync(`<xml un:declared="test" />`))
-		.toThrow('unbound namespace prefix: "un".');
-
-	expect(subject.nodeType).toBe(types.ELEMENT_NODE);
-
-	expect(subject.nodeName).toBe('a:root');
-	expect(subject.localName).toBe('root');
-});
-
-it('namespaced attributes', () => {
-	const subject = doc.documentElement.firstChild.nextSibling; // <a:root>
-
-	expect(subject.getAttributeNS(null, 'attr')).toBe('def');
-	expect(subject.getAttributeNS('http://default', 'attr')).toBeNull();
-	expect(subject.getAttribute('attr')).toBe('def');
-	expect(subject.getAttributeNS('http://a', 'attr')).toBe('A');
-	expect(subject.getAttributeNS('http://b', 'attr')).toBe('B');
-
-	// Declarations are attributes as well
-	expect(subject.getAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns')).toBe('http://default');
-	expect(subject.getAttributeNS('http://www.w3.org/2000/xmlns/', 'a')).toBe('http://a');
-
-	// Assert overriding namespace prefixes
-	expect(subject.firstChild.nodeName).toBe('a:child');
-	expect(subject.firstChild.localName).toBe('child');
-	expect(subject.firstChild.getAttributeNS('http://a', 'attr')).toBe('A');
-	expect(subject.firstChild.getAttributeNS('http://b', 'attr')).toBe('B');
-	expect(subject.firstChild.getAttributeNS('http://d', 'attr')).toBe('d');
-
-	expect(subject.firstChild.nextSibling.getAttributeNS('http://a', 'attr')).toBe('AAA');
-});
-it('be gentle', () => {
-
-	const doc = sync(`<root xmlns="http://derp" blyat="kurwa" />`);
-
-	const subject = doc.documentElement; // <a:root>
-
-	expect(subject.getAttributeNS(null, 'blyat')).toBe('kurwa');
-	expect(subject.getAttribute('blyat')).toBe('kurwa');
-	expect(subject.hasAttribute('ns0:blyat')).toBe(false);
-});
-
-it('knows the always-defined xml namespace', () => {
-	const doc = sync(`<root xml:lang="pl" />`);
-
-	const subject = doc.documentElement; // <a:root>
-
-	expect(subject.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')).toBe('pl');
-	expect(subject.getAttribute('xml:lang')).toBe('pl');
+it('text outside the root node will throw an error', () => {
+	expect(() => sync(`skeet`))
+		.toThrow('text data outside of root node');
 });

@@ -41,24 +41,19 @@ it('doc types', () => {
 
 it('processing instructions', () => {
 	const subject = doc.firstChild.nextSibling;
-
 	expect(subject.nodeType).toBe(types.PROCESSING_INSTRUCTION_NODE);
-
 	expect(subject.target).toBe('pi-target');
 	expect(subject.nodeValue).toBe('pi-data');
 });
 
 it('comments', () => {
 	const subject = doc.firstChild.nextSibling.nextSibling;
-
 	expect(subject.nodeType).toBe(types.COMMENT_NODE);
 });
 
 it('elements', () => {
 	const subject = doc.documentElement;
-
 	expect(subject.nodeType).toBe(types.ELEMENT_NODE);
-
 	expect(subject.nodeName).toBe('root');
 	expect(subject.localName).toBe('root');
 });
@@ -75,13 +70,16 @@ it('cdata', () => {
 
 it('attributes', () => {
 	const subject = doc.documentElement;
-
 	expect(subject.attributes[0].nodeType).toBe(types.ATTRIBUTE_NODE);
-
 	expect(subject.getAttribute('attr')).toBe('val');
 });
 
 it('text outside the root node will throw an error', () => {
 	expect(() => sync(`skeet`))
 		.toThrow('text data outside of root node');
+});
+
+it('XML declaration is not a processing instruction', () => {
+	const doc = sync(`<?xml version="1.0" encoding="UTF-8" standalone="no" ?><?derp ?><x />`);
+	expect(doc.firstChild.target).toBe('derp');
 });

@@ -45,13 +45,10 @@ function createHandler(parser, options) {
 	const trackedPosition = options.position ?
 		node => {
 			const endPosition = { line: parser.line, column: parser.column, offset: parser.position };
-			if (node) {
-				node.position = {
-					start: { ...lastTrackedPosition },
-					end: {...endPosition}
-				};
-			}
-
+			node.position = {
+				start: { ...lastTrackedPosition },
+				end: {...endPosition}
+			};
 			lastTrackedPosition = endPosition;
 			return node;
 		} :
@@ -97,10 +94,6 @@ function createHandler(parser, options) {
 		},
 
 		onProcessingInstruction: (pi) => {
-			if (pi.target === 'xml' && node.nodeType === node.DOCUMENT_NODE) {
-				trackedPosition();
-				return;
-			}
 			node.appendChild(trackedPosition(doc.createProcessingInstruction(pi.target, pi.body)));
 		},
 

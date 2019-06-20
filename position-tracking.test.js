@@ -9,6 +9,7 @@ function stringForPosition (pos) {
 	console.log(pos.start.offset, pos.end.offset);
 	return xmlString.substring(pos.start.offset, pos.end.offset);
 }
+
 // function stringForPosition (pos) {
 // 	const lines = xmlString.split('\n');
 // 	console.log(pos.start.offset, pos.end.offset);

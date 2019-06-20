@@ -33,19 +33,15 @@ const doc = sync([
 
 it('elements', () => {
 	const subject = doc.documentElement.firstChild.nextSibling;
-
 	expect(() => sync(`<xml un:declared="test" />`))
 		.toThrow('unbound namespace prefix: "un".');
-
 	expect(subject.nodeType).toBe(types.ELEMENT_NODE);
-
 	expect(subject.nodeName).toBe('a:root');
 	expect(subject.localName).toBe('root');
 });
 
 it('attributes', () => {
 	const subject = doc.documentElement.firstChild.nextSibling; // <a:root>
-
 	expect(subject.getAttributeNS(null, 'attr')).toBe('def');
 	expect(subject.getAttributeNS('http://default', 'attr')).toBeNull();
 	expect(subject.getAttribute('attr')).toBe('def');
@@ -68,19 +64,14 @@ it('attributes', () => {
 
 it('predefined namespaces', () => {
 	const doc = sync(`<root xml:lang="pl" />`);
-
-	const subject = doc.documentElement; // <a:root>
-
+	const subject = doc.documentElement;
 	expect(subject.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')).toBe('pl');
 	expect(subject.getAttribute('xml:lang')).toBe('pl');
 });
 
 it('null namespace is the same as default namespace', () => {
-
 	const doc = sync(`<root xmlns="http://derp" blyat="kurwa" />`);
-
-	const subject = doc.documentElement; // <a:root>
-
+	const subject = doc.documentElement;
 	expect(subject.getAttributeNS(null, 'blyat')).toBe('kurwa');
 	expect(subject.getAttribute('blyat')).toBe('kurwa');
 	expect(subject.hasAttribute('ns0:blyat')).toBe(false);

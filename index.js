@@ -2,7 +2,6 @@ const saxes = require('saxes');
 const slimdom = require('slimdom');
 
 const DEFAULT_OPTIONS = {
-	xmlns: true,
 	position: false
 };
 
@@ -41,22 +40,59 @@ function createHandler(parser, options) {
 	let lastTrackedPosition = {
 		line: 0, column: 0, offset: 0
 	}
-
 	const trackedPosition = options.position ?
-		node => {
-			const endPosition = { line: parser.line, column: parser.column, offset: parser.position };
-			node.position = {
-				start: { ...lastTrackedPosition },
-				end: {...endPosition}
+		function applyPositionToNode(node = {}) {
+			const endPosition = {
+				offset: parser.position
+
+				// Uncomment to track lines/columns:
+				// line: parser.line,
+				// column: parser.column
 			};
+
+			if (node.nodeType === types.TEXT_NODE) {
+				// For XML text nodes the position tracking is always received when the next node is instantiated, eg.
+				// the opening tag of the next sibling element would show up in the text substr.
+				// Therefore fix endPosition by calculating it from the text thats actually in the node.
+				const wholeText = node.wholeText;
+				endPosition.offset = lastTrackedPosition.offset + wholeText.length;
+
+				// Uncomment to track lines/columns:
+				// const wholeTextNewlines = wholeText.match(/\n/g);
+				// endPosition.line = lastTrackedPosition.line + (wholeTextNewlines ? wholeTextNewlines.length : 0);
+				// endPosition.column = wholeTextNewlines ?
+				// 	wholeText.substr(wholeText.lastIndexOf('\n')).length :
+				// 	lastTrackedPosition.column + wholeText.length;
+			}
+
+			if (node.nodeType === types.COMMENT_NODE) {
+				// For XML comments the position tracking is always received one character too short.
+				// This right here is a local fix, and rather crude.
+				endPosition.offset++;
+
+				// Uncomment to track lines/columns:
+				// endPosition.column++;
+			}
+
+			node.position = {
+				start: lastTrackedPosition.offset,
+				end: endPosition.offset
+
+				// Uncomment to track lines/columns:
+				// start: lastTrackedPosition,
+				// end: endPosition
+			};
+
 			lastTrackedPosition = endPosition;
+
 			return node;
 		} :
 		node => node;
 
 	return {
 		onText: (text) => {
-			node.appendChild(trackedPosition(doc.createTextNode(text)));
+			const textNode = trackedPosition(doc.createTextNode(text));
+			node.appendChild(textNode);
 		},
 
 		onOpenTag: (element) => {
@@ -84,9 +120,13 @@ function createHandler(parser, options) {
 		},
 
 		onCloseTag: () => {
+			// Update position tracking so that the closing tag of an element is not prepended to the following sibling
+			trackedPosition();
+
+			// Any traversal from now on is within a higher context element
 			node = node.parentNode;
 
-			// Less namespace declarations might be applicable
+			// Less namespace declarations might now be applicable
 			namespaces.pop();
 
 			// Recalculate the (subset) portion of known namespace information
@@ -136,14 +176,12 @@ exports.slimdom = slimdom;
  * @param {string} xml
  * @returns {slimdom.Document}
  */
-exports.sync = function synchronousSlimdomSaxParser(xml, options) {
-	options = {
-		...DEFAULT_OPTIONS,
-		...options
-	};
-
+exports.sync = function synchronousSlimdomSaxParser(xml, options = DEFAULT_OPTIONS) {
 	// Set up the sax parser
-	const parser = new saxes.SaxesParser(options);
+	const parser = new saxes.SaxesParser({
+		xmlns: true,
+		position: options.position
+	});
 
 	const handler = createHandler(parser, options);
 

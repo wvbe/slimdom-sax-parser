@@ -8,13 +8,16 @@ const DEFAULT_OPTIONS = {
 };
 
 /*
- * Export the API of slimdom-sax-parser
+ * Export the API of slimdom-sax-parser, as a convenience.
  */
 exports.slimdom = slimdom;
 
 /**
- * Synchronously parse a string of XML to a Slimdom document
+ * Synchronously parse a string of XML to a Slimdom document.
  * @param {string} xml
+ * @param {object} options
+ * @param {boolean} [options.position]  Enable position tracking, the start- and end offsets from which a DOM node was
+ *                                      parsed.
  * @returns {slimdom.Document}
  */
 exports.sync = function synchronousSlimdomSaxParser(xml, options = DEFAULT_OPTIONS) {

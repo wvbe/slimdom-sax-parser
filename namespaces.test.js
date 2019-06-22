@@ -22,12 +22,12 @@ const doc = sync([
 	`<?pi-target pi-data?>`,
 	`<!-- comment -->`,
 	`<root attr="val">`,
-		`<contains-text>text</contains-text>`,
-		`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
-			`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
-			`<a:next-sibling a:attr="AAA" />`,
-		`</a:root>`,
-		`<![CDATA[cdata]]>`,
+	`<contains-text>text</contains-text>`,
+	`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
+	`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
+	`<a:next-sibling a:attr="AAA" />`,
+	`</a:root>`,
+	`<![CDATA[cdata]]>`,
 	`</root>`
 ].join(''));
 
@@ -69,7 +69,7 @@ it('predefined namespaces', () => {
 	expect(subject.getAttribute('xml:lang')).toBe('pl');
 });
 
-it('null namespace is the same as default namespace', () => {
+it('Default namespace declarations do not apply directly to attribute names', () => {
 	const doc = sync(`<root xmlns="http://derp" blyat="kurwa" />`);
 	const subject = doc.documentElement;
 	expect(subject.getAttributeNS(null, 'blyat')).toBe('kurwa');
@@ -77,7 +77,7 @@ it('null namespace is the same as default namespace', () => {
 	expect(subject.hasAttribute('ns0:blyat')).toBe(false);
 });
 
-it('undefined namespaces will throw an error', () => {
+it('Undefined namespaces will throw an error', () => {
 	expect(() => sync(`<boop:root nerf="pl" />`))
 		.toThrow('unbound namespace prefix: "boop"');
 	expect(() => sync(`<root skeet:nerf="pl" />`))

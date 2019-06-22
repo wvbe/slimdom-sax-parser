@@ -25,12 +25,12 @@ const doc = sync([
 	`<?pi-target pi-data?>`,
 	`<!-- comment -->`,
 	`<root attr="val">`,
-		`<contains-text>text</contains-text>`,
-		`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
-			`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
-			`<a:next-sibling a:attr="AAA" />`,
-		`</a:root>`,
-		`<![CDATA[cdata]]>`,
+	`<contains-text>text</contains-text>`,
+	`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
+	`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
+	`<a:next-sibling a:attr="AAA" />`,
+	`</a:root>`,
+	`<![CDATA[cdata]]>`,
 	`</root>`
 ].join(''));
 
@@ -62,17 +62,17 @@ it('elements', () => {
 });
 
 it('text nodes', () => {
-	const subject = doc.documentElement.firstChild.firstChild;
+	const subject = evaluateXPath('/*/*[1]/text()', doc);
 	expect(subject.nodeType).toBe(types.TEXT_NODE);
 });
 
 it('cdata', () => {
-	const subject = doc.documentElement.firstChild.nextSibling.nextSibling;
+	const subject = evaluateXPath('/*/*[2]', doc).nextSibling;
 	expect(subject.nodeType).toBe(types.CDATA_SECTION_NODE);
 });
 
 it('attributes', () => {
-	const subject = doc.documentElement;
+	const subject = evaluateXPath('/element()', doc);
 	expect(subject.attributes[0].nodeType).toBe(types.ATTRIBUTE_NODE);
 	expect(subject.getAttribute('attr')).toBe('val');
 });

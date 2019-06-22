@@ -25,6 +25,17 @@ const types = {
 	DOCUMENT_FRAGMENT_NODE: 11,
 	NOTATION_NODE: 12
 };
+
+function createNamespaceContext(defaultNsMapping = DEFAULT_NS_MAPPING) {
+	const namespaces = [defaultNsMapping];
+
+	return {
+		push: x => namespaces.unshift(x),
+		pop: () => namespaces.shift(),
+		location: prefix => namespaces.find(ns => ns[prefix] !== undefined)[prefix]
+	}
+}
+
 /*
  * Create the required callbacks for populating a new document from sax event handlers
  */
@@ -34,8 +45,7 @@ function createHandler(parser, options) {
 	// Is rewritten as the handler traverses in and out of nodes
 	let node = doc;
 
-	const namespaces = [DEFAULT_NS_MAPPING];
-	let currentNamespaces = Object.create(DEFAULT_NS_MAPPING);
+	const namespaces = createNamespaceContext();
 
 	let lastTrackedPosition = {
 		line: 0, column: 0, offset: 0
@@ -98,18 +108,20 @@ function createHandler(parser, options) {
 		onOpenTag: (element) => {
 			// More namespace declarations might be applicable
 			namespaces.push(element.ns);
-			currentNamespaces = Object.assign(currentNamespaces, element.ns);
 
-			const instance = trackedPosition(doc.createElementNS(currentNamespaces[element.prefix], element.name));
+			const instance = trackedPosition(doc.createElementNS(namespaces.location(element.prefix), element.name));
 
 			// Set attributes, taking the accumulated namespace information into account
 			Object.keys(element.attributes)
 				.map(name => element.attributes[name])
 				.forEach(attr => {
-					let namespaceURI = attr.prefix === '' ? null : currentNamespaces[attr.prefix];
-					// Default namespace declarations have no prefix but are in the XMLNS namespace
+					// Default namespace declarations do not apply to attributes, so if an attribute
+					// is not prefixed the namespace location is null
+					let namespaceURI = attr.prefix === '' ? null : namespaces.location(attr.prefix);
+
+					// @xmlns has no prefix but is in the XMLNS namespace
 					if (attr.prefix === '' && attr.name === 'xmlns') {
-						namespaceURI = currentNamespaces['xmlns'];
+						namespaceURI = namespaces.location('xmlns');
 					}
 
 					instance.setAttributeNS(namespaceURI, attr.name, attr.value);
@@ -128,9 +140,6 @@ function createHandler(parser, options) {
 
 			// Less namespace declarations might now be applicable
 			namespaces.pop();
-
-			// Recalculate the (subset) portion of known namespace information
-			currentNamespaces = namespaces.reduce((accum, ns) => Object.assign(accum, ns), {});
 		},
 
 		onProcessingInstruction: (pi) => {

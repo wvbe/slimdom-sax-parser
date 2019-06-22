@@ -1,5 +1,6 @@
-const { sync } = require('./index');
 const { evaluateXPath } = require('fontoxpath');
+
+const { sync } = require('../index');
 
 const types = {
 	ELEMENT_NODE: 1,

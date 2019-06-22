@@ -1,5 +1,6 @@
-const { sync } = require('./index');
 const { evaluateXPath } = require('fontoxpath');
+
+const { sync } = require('../index');
 
 function stringForPosition(xmlString, pos) {
 	return xmlString.substring(pos.start, pos.end);

@@ -1,4 +1,4 @@
-const { sync } = require('./index');
+const { sync } = require('../index');
 
 const types = {
 	ELEMENT_NODE: 1,

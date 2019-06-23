@@ -16,7 +16,7 @@ it('Use with an XPath engine', () => {
 	expect(evaluateXPath('/foo/*', document).length).toBe(2);
 });
 
-it('Use with an XPath engine', () => {
+it('Use source code position tracking', () => {
 	const xml = '<example><child-element /></example>';
 
 	const document = sync(xml, { position: true });

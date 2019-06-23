@@ -6,6 +6,7 @@ XML DOM implementation for browser and node.
 - Parses text, elements, attributes, processing instructions, comments and CDATA
 - Supports namespaces
 - Optionally track the position in XML string source
+- Works in NodeJS and the browser
 
 ## Exports
 

@@ -17,13 +17,15 @@ module.exports = function createHandler(parser, options) {
 	// Helpers for other responsibilities
 	const namespaces = createNamespaceContext();
 
-	const track = options.position ?
-		createPositionTracker(parser) :
-		node => node;
+	const track = options.position ? createPositionTracker(parser) : (node) => node;
 
 	// Return a bunch of methods that can be applied directly to a saxes parser instance.
 	return {
 		onText: (text) => {
+			if (contextNode === document) {
+				track();
+				return;
+			}
 			const textNode = track(document.createTextNode(text));
 			contextNode.appendChild(textNode);
 		},
@@ -35,20 +37,18 @@ module.exports = function createHandler(parser, options) {
 			const node = track(document.createElementNS(namespaces.location(element.prefix), element.name));
 
 			// Set attributes, taking the accumulated namespace information into account
-			Object.keys(element.attributes)
-				.map(name => element.attributes[name])
-				.forEach(attr => {
-					// Default namespace declarations do not apply to attributes, so if an attribute
-					// is not prefixed the namespace location is null
-					let namespaceURI = attr.prefix === '' ? null : namespaces.location(attr.prefix);
+			Object.keys(element.attributes).map((name) => element.attributes[name]).forEach((attr) => {
+				// Default namespace declarations do not apply to attributes, so if an attribute
+				// is not prefixed the namespace location is null
+				let namespaceURI = attr.prefix === '' ? null : namespaces.location(attr.prefix);
 
-					// @xmlns has no prefix but is in the XMLNS namespace
-					if (attr.prefix === '' && attr.name === 'xmlns') {
-						namespaceURI = namespaces.location('xmlns');
-					}
+				// @xmlns has no prefix but is in the XMLNS namespace
+				if (attr.prefix === '' && attr.name === 'xmlns') {
+					namespaceURI = namespaces.location('xmlns');
+				}
 
-					node.setAttributeNS(namespaceURI, attr.name, attr.value);
-				});
+				node.setAttributeNS(namespaceURI, attr.name, attr.value);
+			});
 
 			contextNode.appendChild(node);
 			contextNode = node;
@@ -74,18 +74,17 @@ module.exports = function createHandler(parser, options) {
 		},
 
 		onDocType: (data) => {
-			const [
-				qualifiedName,
-				_publicSystem,
-				publicId,
-				systemId
-			] = data.match(/(?:[^\s"]+|"[^"]*")+/g);
+			const [ qualifiedName, _publicSystem, publicId, systemId ] = data.match(/(?:[^\s"]+|"[^"]*")+/g);
 
-			contextNode.appendChild(track(document.implementation.createDocumentType(
-				qualifiedName,
-				publicId && publicId.replace(/^"(.*)"$/, '$1') || '',
-				systemId && systemId.replace(/^"(.*)"$/, '$1') || ''
-			)));
+			contextNode.appendChild(
+				track(
+					document.implementation.createDocumentType(
+						qualifiedName,
+						(publicId && publicId.replace(/^"(.*)"$/, '$1')) || '',
+						(systemId && systemId.replace(/^"(.*)"$/, '$1')) || ''
+					)
+				)
+			);
 		},
 
 		onCdata: (string) => {
@@ -96,4 +95,4 @@ module.exports = function createHandler(parser, options) {
 			return document;
 		}
 	};
-}
+};

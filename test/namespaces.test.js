@@ -15,26 +15,27 @@ const types = {
 	NOTATION_NODE: 12
 };
 
-const doc = sync([
-	// Note that the following line is an XML version declaration. Not a PI (https://github.com/isaacs/sax-js/issues/178)
-	`<?xml version="1.0"?>`,
-	`<!DOCTYPE something PUBLIC "-//example doctype//EN" "http://www.example.org/ns">`,
-	`<?pi-target pi-data?>`,
-	`<!-- comment -->`,
-	`<root attr="val">`,
-	`<contains-text>text</contains-text>`,
-	`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
-	`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
-	`<a:next-sibling a:attr="AAA" />`,
-	`</a:root>`,
-	`<![CDATA[cdata]]>`,
-	`</root>`
-].join(''));
+const doc = sync(
+	[
+		// Note that the following line is an XML version declaration. Not a PI (https://github.com/isaacs/sax-js/issues/178)
+		`<?xml version="1.0"?>`,
+		`<!DOCTYPE something PUBLIC "-//example doctype//EN" "http://www.example.org/ns">`,
+		`<?pi-target pi-data?>`,
+		`<!-- comment -->`,
+		`<root attr="val">`,
+		`<contains-text>text</contains-text>`,
+		`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
+		`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
+		`<a:next-sibling a:attr="AAA" />`,
+		`</a:root>`,
+		`<![CDATA[cdata]]>`,
+		`</root>`
+	].join('')
+);
 
 it('elements', () => {
 	const subject = doc.documentElement.firstChild.nextSibling;
-	expect(() => sync(`<xml un:declared="test" />`))
-		.toThrow('unbound namespace prefix: "un".');
+	expect(() => sync(`<xml un:declared="test" />`)).toThrow('unbound namespace prefix: "un".');
 	expect(subject.nodeType).toBe(types.ELEMENT_NODE);
 	expect(subject.nodeName).toBe('a:root');
 	expect(subject.localName).toBe('root');
@@ -78,8 +79,6 @@ it('Default namespace declarations do not apply directly to attribute names', ()
 });
 
 it('Undefined namespaces will throw an error', () => {
-	expect(() => sync(`<boop:root nerf="pl" />`))
-		.toThrow('unbound namespace prefix: "boop"');
-	expect(() => sync(`<root skeet:nerf="pl" />`))
-		.toThrow('unbound namespace prefix: "skeet"');
+	expect(() => sync(`<boop:root nerf="pl" />`)).toThrow('unbound namespace prefix: "boop"');
+	expect(() => sync(`<root skeet:nerf="pl" />`)).toThrow('unbound namespace prefix: "skeet"');
 });

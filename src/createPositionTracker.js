@@ -15,16 +15,18 @@ const types = {
 
 // Create the context needed to track the positions in an XML string at which a Slimdom node was defined. Is based
 // on input from the saxes parser and fixes some unexpected behaviour by it.
-module.exports = function createPositionTracker (parser) {
+module.exports = function createPositionTracker(parser) {
 	let lastTrackedPosition = {
-		line: 0, column: 0, offset: 0
-	}
+		line: 0,
+		column: 0,
+		offset: 0
+	};
 
 	// Fixes some quirky results from saxes' position tracking:
 	// - XML comments were always one character short
 	// - text node boundaries were not the text length
 	// Also, currently uses only an offset, because the line/column numbers can be easily calculated if you need them.
-	function getNextPosition (node) {
+	function getNextPosition(node) {
 		const position = {
 			offset: parser.position
 
@@ -66,7 +68,7 @@ module.exports = function createPositionTracker (parser) {
 
 	// Updates the tracker with new input from the saxes parser, and writes a "position" property to the DOM node
 	// that was passed.
-	function track (node) {
+	function track(node) {
 		const endPosition = getNextPosition(node);
 
 		if (node) {

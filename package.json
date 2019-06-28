@@ -1,34 +1,27 @@
 {
-  "name": "slimdom-sax-parser",
-  "version": "1.2.0",
-  "description": "Parses XML to a Slimdom document using Sax",
-  "repository": "wvbe/slimdom-sax-parser",
-  "author": {
-    "name": "Wybe Minnebo",
-    "email": "wybe@x-54.com",
-    "url": "https://github.com/wvbe"
-  },
-  "license": "MIT",
-  "homepage": "https://github.com/wvbe/slimdom-sax-parser",
-  "keywords": [
-    "xml",
-    "parse",
-    "sax",
-    "slimdom",
-    "jsdom",
-    "dom"
-  ],
-  "main": "index.js",
-  "scripts": {
-	"test": "jest",
-    "test-report": "jest --verbose --coverage"
-  },
-  "dependencies": {
-    "saxes": "^3.1.10",
-    "slimdom": "^2.3.1"
-  },
-  "devDependencies": {
-    "fontoxpath": "^3.6.0",
-    "jest": "^21.2.0"
-  }
+	"name": "slimdom-sax-parser",
+	"version": "1.2.1",
+	"description": "Parses XML to a Slimdom document using Sax",
+	"repository": "wvbe/slimdom-sax-parser",
+	"author": {
+		"name": "Wybe Minnebo",
+		"email": "wybe@x-54.com",
+		"url": "https://github.com/wvbe"
+	},
+	"license": "MIT",
+	"homepage": "https://github.com/wvbe/slimdom-sax-parser",
+	"keywords": [ "xml", "parse", "sax", "slimdom", "jsdom", "dom" ],
+	"main": "index.js",
+	"scripts": {
+		"test": "jest",
+		"test-report": "jest --verbose --coverage"
+	},
+	"dependencies": {
+		"saxes": "^3.1.10",
+		"slimdom": "^2.3.1"
+	},
+	"devDependencies": {
+		"fontoxpath": "^3.6.0",
+		"jest": "^21.2.0"
+	}
 }

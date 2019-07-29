@@ -21,11 +21,12 @@ exports.slimdom = slimdom;
  *                                      parsed.
  * @returns {slimdom.Document}
  */
-exports.sync = function synchronousSlimdomSaxParser(xml, options = DEFAULT_OPTIONS) {
+exports.sync = function synchronousSlimdomSaxParser(xml, options) {
 	// Set up the sax parser
-	const parser = new saxes.SaxesParser(options);
+	merged_options = Object.assign({}, DEFAULT_OPTIONS, options);
+	const parser = new saxes.SaxesParser(merged_options);
 
-	const handler = createHandler(parser, options);
+	const handler = createHandler(parser, merged_options);
 
 	parser.ontext = handler.onText;
 	parser.onopentag = handler.onOpenTag;

@@ -15,7 +15,7 @@ module.exports = function createHandler(parser, options) {
 	let contextNode = document;
 
 	// Helpers for other responsibilities
-	const namespaces = createNamespaceContext();
+	const namespaces = createNamespaceContext(options.additionalNamespaces);
 
 	const track = options.position ? createPositionTracker(parser) : (node) => node;
 

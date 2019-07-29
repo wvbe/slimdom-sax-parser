@@ -5,8 +5,11 @@ const DEFAULT_NS_MAPPING = {
 };
 
 // Records an array of overlapping objects that is shifted and unshifted as the parser traverses.
-module.exports = function createNamespaceContext(defaultNsMapping = DEFAULT_NS_MAPPING) {
-	const namespaces = [ defaultNsMapping ];
+module.exports = function createNamespaceContext(additionalNsMapping) {
+	const namespaces = [ DEFAULT_NS_MAPPING ];
+        if (additionalNsMapping !== undefined) {
+                namespaces.unshift(additionalNsMapping);
+        }
 
 	return {
 		// pop and push are actually shift and unshift to make searches more efficient

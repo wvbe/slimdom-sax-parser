@@ -4,6 +4,7 @@ const slimdom = require('slimdom');
 const createHandler = require('./src/createHandler');
 
 const DEFAULT_OPTIONS = {
+	xmlns: true,
 	position: false
 };
 
@@ -22,10 +23,7 @@ exports.slimdom = slimdom;
  */
 exports.sync = function synchronousSlimdomSaxParser(xml, options = DEFAULT_OPTIONS) {
 	// Set up the sax parser
-	const parser = new saxes.SaxesParser({
-		xmlns: true,
-		position: options.position
-	});
+	const parser = new saxes.SaxesParser(options);
 
 	const handler = createHandler(parser, options);
 

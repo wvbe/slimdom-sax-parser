@@ -38,8 +38,10 @@ exports.sync = function synchronousSlimdomSaxParser(xml, options) {
 	parser.oncdata = handler.onCdata;
 	parser.onclosecdata = handler.onCloseCdata;
 
-	for (const [entity, entityValue] of Object.entries(options.additionalEntities)) {
-		parser.ENTITIES[entity] = entityValue
+	if (options !== undefined && options.additionalEntities !== undefined ) {
+		for (const [entity, entityValue] of Object.entries(options.additionalEntities)) {
+			parser.ENTITIES[entity] = entityValue
+		}
 	}
 
 	parser.write(xml).close();

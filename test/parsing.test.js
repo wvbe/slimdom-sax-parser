@@ -26,7 +26,7 @@ const doc = sync(
 		`<!DOCTYPE something PUBLIC "-//example doctype//EN" "http://www.example.org/ns">`,
 		`<?pi-target pi-data?>`,
 		`<!-- comment -->`,
-		`<root attr="val">`,
+		`<root attr="val" whitespace="before\n\r\r\r\nafter">`,
 		`<contains-text>text</contains-text>`,
 		`<a:root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://b" xmlns:d="http://d" a:attr="A" b:attr="B" attr="def">`,
 		`<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />`,
@@ -78,6 +78,10 @@ it('attributes', () => {
 	const subject = evaluateXPath('/element()', doc);
 	expect(subject.attributes[0].nodeType).toBe(types.ATTRIBUTE_NODE);
 	expect(subject.getAttribute('attr')).toBe('val');
+});
+
+it('whitespace normalization in attributes', () => {
+	expect(doc.documentElement.getAttribute('whitespace')).toBe('before    after');
 });
 
 it('text outside the root node will throw an error', () => {

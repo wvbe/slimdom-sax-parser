@@ -10,14 +10,21 @@
 	},
 	"license": "MIT",
 	"homepage": "https://github.com/wvbe/slimdom-sax-parser",
-	"keywords": [ "xml", "parse", "sax", "slimdom", "jsdom", "dom" ],
+	"keywords": [
+		"xml",
+		"parse",
+		"sax",
+		"slimdom",
+		"jsdom",
+		"dom"
+	],
 	"main": "index.js",
 	"scripts": {
 		"test": "jest",
 		"test-report": "jest --verbose --coverage"
 	},
 	"dependencies": {
-		"saxes": "^3.1.10",
+		"saxes": "^4.0.2",
 		"slimdom": "^2.3.1"
 	},
 	"devDependencies": {

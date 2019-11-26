@@ -4,6 +4,7 @@ const slimdom = require('slimdom');
 const createHandler = require('./src/createHandler');
 
 const DEFAULT_OPTIONS = {
+	xmlns: true,
 	position: false
 };
 
@@ -20,14 +21,12 @@ exports.slimdom = slimdom;
  *                                      parsed.
  * @returns {slimdom.Document}
  */
-exports.sync = function synchronousSlimdomSaxParser(xml, options = DEFAULT_OPTIONS) {
+exports.sync = function synchronousSlimdomSaxParser(xml, options) {
 	// Set up the sax parser
-	const parser = new saxes.SaxesParser({
-		xmlns: true,
-		position: options.position
-	});
+	const mergedOptions = Object.assign({}, DEFAULT_OPTIONS, options);
+	const parser = new saxes.SaxesParser(mergedOptions);
 
-	const handler = createHandler(parser, options);
+	const handler = createHandler(parser, mergedOptions);
 
 	parser.ontext = handler.onText;
 	parser.onopentag = handler.onOpenTag;
@@ -38,6 +37,12 @@ exports.sync = function synchronousSlimdomSaxParser(xml, options = DEFAULT_OPTIO
 	parser.onopencdata = handler.onOpenCdata;
 	parser.oncdata = handler.onCdata;
 	parser.onclosecdata = handler.onCloseCdata;
+
+	if (options !== undefined && options.additionalEntities !== undefined) {
+		for (const [entity, entityValue] of Object.entries(options.additionalEntities)) {
+			parser.ENTITIES[entity] = entityValue;
+		}
+	}
 
 	parser.write(xml).close();
 

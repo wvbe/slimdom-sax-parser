@@ -70,6 +70,14 @@ it('predefined namespaces', () => {
 	expect(subject.getAttribute('xml:lang')).toBe('pl');
 });
 
+it('additional namespaces', () => {
+	const doc = sync(`<nerf:xml un:declared="test" />`, {
+		additionalNamespaces: { nerf: 'http://nerf.uri', un: 'defined' }
+	});
+	expect(doc.documentElement.nodeName).toBe('nerf:xml');
+	expect(doc.documentElement.localName).toBe('xml');
+});
+
 it('Default namespace declarations do not apply directly to attribute names', () => {
 	const doc = sync(`<root xmlns="http://derp" blyat="kurwa" />`);
 	const subject = doc.documentElement;

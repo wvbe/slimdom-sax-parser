@@ -1,3 +1,5 @@
+/* eslint-env jest */
+
 const { evaluateXPath } = require('fontoxpath');
 const { slimdom, sync } = require('../index');
 

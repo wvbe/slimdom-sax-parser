@@ -17,22 +17,21 @@ const types = {
 // on input from the saxes parser and fixes some unexpected behaviour by it.
 module.exports = function createPositionTracker(parser) {
 	let lastTrackedPosition = {
-		line: 0,
-		column: 0,
+		// Line and column numbers are 1-based
+		line: 1,
+		column: 1,
+
+		// Offset (start + end) are 0-based
 		offset: 0
 	};
 
 	// Fixes some quirky results from saxes' position tracking:
 	// - XML comments were always one character short
-	// - text node boundaries were not the text length
-	// Also, currently uses only an offset, because the line/column numbers can be easily calculated if you need them.
 	function getNextPosition(node) {
 		const position = {
-			offset: parser.position
-
-			// Uncomment to track lines/columns:
-			// line: parser.line,
-			// column: parser.column
+			offset: parser.position,
+			line: parser.line,
+			column: parser.column + 1
 		};
 
 		if (!node) {
@@ -44,23 +43,21 @@ module.exports = function createPositionTracker(parser) {
 			// the opening tag of the next sibling element would show up in the text substr.
 			// Therefore fix endPosition by calculating it from the text thats actually in the node.
 			const wholeText = node.wholeText;
-			position.offset = lastTrackedPosition.offset + wholeText.length;
+			const wholeTextNewlines = wholeText.match(/\n/g);
 
-			// Uncomment to track lines/columns:
-			// const wholeTextNewlines = wholeText.match(/\n/g);
-			// endPosition.line = lastTrackedPosition.line + (wholeTextNewlines ? wholeTextNewlines.length : 0);
-			// endPosition.column = wholeTextNewlines ?
-			// 	wholeText.substr(wholeText.lastIndexOf('\n')).length :
-			// 	lastTrackedPosition.column + wholeText.length;
+			position.offset = lastTrackedPosition.offset + wholeText.length;
+			position.line =
+				lastTrackedPosition.line + (wholeTextNewlines ? wholeTextNewlines.length : 0);
+			position.column = wholeTextNewlines
+				? wholeText.substr(wholeText.lastIndexOf('\n')).length
+				: lastTrackedPosition.column + wholeText.length;
 		}
 
 		if (node.nodeType === types.COMMENT_NODE) {
 			// For XML comments the position tracking is always received one character too short.
 			// This right here is a local fix, and rather crude.
 			position.offset++;
-
-			// Uncomment to track lines/columns:
-			// endPosition.column++;
+			position.column++;
 		}
 
 		return position;
@@ -73,12 +70,10 @@ module.exports = function createPositionTracker(parser) {
 
 		if (node) {
 			node.position = {
+				line: lastTrackedPosition.line,
+				column: lastTrackedPosition.column,
 				start: lastTrackedPosition.offset,
 				end: endPosition.offset
-
-				// Uncomment to track lines/columns:
-				// start: lastTrackedPosition,
-				// end: endPosition
 			};
 		}
 

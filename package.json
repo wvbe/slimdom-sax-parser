@@ -35,7 +35,7 @@
 		"slimdom": "^2.3.1"
 	},
 	"devDependencies": {
-		"fontoxpath": "^3.6.0",
+		"fontoxpath": "^3.9.2",
 		"jest": "^21.2.0"
 	}
 }

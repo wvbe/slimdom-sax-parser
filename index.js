@@ -19,7 +19,7 @@ exports.slimdom = slimdom;
  * @param {object} options
  * @param {boolean} [options.position]  Enable position tracking, the start- and end offsets from which a DOM node was
  *                                      parsed.
- * @returns {slimdom.Document}
+ * @return {slimdom.Document}
  */
 exports.sync = function synchronousSlimdomSaxParser(xml, options) {
 	// Set up the sax parser

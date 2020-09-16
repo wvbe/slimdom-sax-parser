@@ -1,15 +1,13 @@
-/* eslint-env jest */
-
-const { evaluateXPath } = require('fontoxpath');
-const { slimdom, sync } = require('../index');
+import { evaluateXPath } from 'fontoxpath';
+import { sync, slimdom, PositionTrackedNode } from '../src/index';
 
 // Asserts that the code examples in README.md are correct
 
 it('Modify the XML DOM', () => {
 	const document = sync(`<foo />`);
 
-	document.documentElement.setAttribute('bar', 'baz');
-	expect(document.documentElement.hasAttribute('bar')).toBeTruthy();
+	document.documentElement?.setAttribute('bar', 'baz');
+	expect(document.documentElement?.hasAttribute('bar')).toBeTruthy();
 });
 
 it('Use with an XPath engine', () => {
@@ -24,9 +22,9 @@ it('Use source code position tracking', () => {
 	const document = sync(xml, { position: true });
 	expect(document).toBeInstanceOf(slimdom.Document);
 
-	const childElement = document.documentElement.firstChild;
+	const childElement = document.documentElement?.firstChild;
 	expect(childElement).toBeInstanceOf(slimdom.Element);
 
-	const position = childElement.position;
+	const position = (childElement as PositionTrackedNode).position;
 	expect(xml.substring(position.start, position.end)).toBe('<child-element />');
 });

@@ -1,3 +1,19 @@
+import { SaxesParser } from 'saxes';
+import { Node } from 'slimdom';
+
+export type PositionTrackedNode = Node & {
+	position: {
+		line: number;
+		column: number;
+		start: number;
+		end: number;
+	};
+};
+
+export type PositionUpdater = () => void;
+
+export type PositionTracker = (node: Node) => PositionTrackedNode;
+
 const types = {
 	ELEMENT_NODE: 1,
 	ATTRIBUTE_NODE: 2,
@@ -13,9 +29,13 @@ const types = {
 	NOTATION_NODE: 12
 };
 
-// Create the context needed to track the positions in an XML string at which a Slimdom node was defined. Is based
-// on input from the saxes parser and fixes some unexpected behaviour by it.
-module.exports = function createPositionTracker(parser) {
+/**
+ * Create the context needed to track the positions in an XML string at which a Slimdom node was defined. Is based on
+ * input from the saxes parser and fixes some unexpected behaviour by it.
+ */
+export default function createPositionTracker(
+	parser: SaxesParser
+): [PositionTracker, PositionUpdater] {
 	let lastTrackedPosition = {
 		// Line and column numbers are 1-based
 		line: 1,
@@ -27,7 +47,7 @@ module.exports = function createPositionTracker(parser) {
 
 	// Fixes some quirky results from saxes' position tracking:
 	// - XML comments were always one character short
-	function getNextPosition(node) {
+	function getNextPosition(node?: Node) {
 		const position = {
 			offset: parser.position,
 			line: parser.line,
@@ -42,7 +62,7 @@ module.exports = function createPositionTracker(parser) {
 			// For XML text nodes the position tracking is always received when the next node is instantiated, eg.
 			// the opening tag of the next sibling element would show up in the text substr.
 			// Therefore fix endPosition by calculating it from the text thats actually in the node.
-			const wholeText = node.wholeText;
+			const wholeText = node.textContent || '';
 			const wholeTextNewlines = wholeText.match(/\n/g);
 
 			position.offset = lastTrackedPosition.offset + wholeText.length;
@@ -63,24 +83,38 @@ module.exports = function createPositionTracker(parser) {
 		return position;
 	}
 
+	function update(): void {
+		const endPosition = getNextPosition();
+
+		lastTrackedPosition = endPosition;
+	}
+
 	// Updates the tracker with new input from the saxes parser, and writes a "position" property to the DOM node
 	// that was passed.
-	function track(node) {
+	function track(node: Node): PositionTrackedNode {
 		const endPosition = getNextPosition(node);
 
-		if (node) {
-			node.position = {
-				line: lastTrackedPosition.line,
-				column: lastTrackedPosition.column,
-				start: lastTrackedPosition.offset,
-				end: endPosition.offset
-			};
-		}
+		(<PositionTrackedNode>node).position = {
+			line: lastTrackedPosition.line,
+			column: lastTrackedPosition.column,
+			start: lastTrackedPosition.offset,
+			end: endPosition.offset
+		};
 
 		lastTrackedPosition = endPosition;
 
-		return node;
+		return <PositionTrackedNode>node;
 	}
 
-	return track;
-};
+	return [track, update];
+}
+
+/**
+ * No-op alternative for position tracking, when position tracking is disabled.
+ */
+export const positionTrackerStubs = [
+	// Stub track()
+	(node?: any) => node,
+	// Stub update()
+	() => {}
+];

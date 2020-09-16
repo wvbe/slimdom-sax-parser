@@ -1,4 +1,4 @@
-const { sync } = require('../index');
+import { sync } from '../src/index';
 
 const types = {
 	ELEMENT_NODE: 1,
@@ -34,15 +34,15 @@ const doc = sync(
 );
 
 it('elements', () => {
-	const subject = doc.documentElement.firstChild.nextSibling;
+	const subject = doc.documentElement?.firstChild?.nextSibling as any;
 	expect(() => sync(`<xml un:declared="test" />`)).toThrow('unbound namespace prefix: "un".');
-	expect(subject.nodeType).toBe(types.ELEMENT_NODE);
-	expect(subject.nodeName).toBe('a:root');
-	expect(subject.localName).toBe('root');
+	expect(subject?.nodeType).toBe(types.ELEMENT_NODE);
+	expect(subject?.nodeName).toBe('a:root');
+	expect(subject?.localName).toBe('root');
 });
 
 it('attributes', () => {
-	const subject = doc.documentElement.firstChild.nextSibling; // <a:root>
+	const subject = doc.documentElement?.firstChild?.nextSibling as any; // <a:root>
 	expect(subject.getAttributeNS(null, 'attr')).toBe('def');
 	expect(subject.getAttributeNS('http://default', 'attr')).toBeNull();
 	expect(subject.getAttribute('attr')).toBe('def');
@@ -66,24 +66,24 @@ it('attributes', () => {
 it('predefined namespaces', () => {
 	const doc = sync(`<root xml:lang="pl" />`);
 	const subject = doc.documentElement;
-	expect(subject.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')).toBe('pl');
-	expect(subject.getAttribute('xml:lang')).toBe('pl');
+	expect(subject?.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')).toBe('pl');
+	expect(subject?.getAttribute('xml:lang')).toBe('pl');
 });
 
 it('additional namespaces', () => {
 	const doc = sync(`<nerf:xml un:declared="test" />`, {
 		additionalNamespaces: { nerf: 'http://nerf.uri', un: 'defined' }
 	});
-	expect(doc.documentElement.nodeName).toBe('nerf:xml');
-	expect(doc.documentElement.localName).toBe('xml');
+	expect(doc.documentElement?.nodeName).toBe('nerf:xml');
+	expect(doc.documentElement?.localName).toBe('xml');
 });
 
 it('Default namespace declarations do not apply directly to attribute names', () => {
 	const doc = sync(`<root xmlns="http://derp" blyat="kurwa" />`);
 	const subject = doc.documentElement;
-	expect(subject.getAttributeNS(null, 'blyat')).toBe('kurwa');
-	expect(subject.getAttribute('blyat')).toBe('kurwa');
-	expect(subject.hasAttribute('ns0:blyat')).toBe(false);
+	expect(subject?.getAttributeNS(null, 'blyat')).toBe('kurwa');
+	expect(subject?.getAttribute('blyat')).toBe('kurwa');
+	expect(subject?.hasAttribute('ns0:blyat')).toBe(false);
 });
 
 it('Undefined namespaces will throw an error', () => {

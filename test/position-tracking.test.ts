@@ -1,10 +1,7 @@
-/* eslint-env jest */
+import { evaluateXPath } from 'fontoxpath';
+import { sync, PositionTrackedNode } from '../src/index';
 
-const { evaluateXPath } = require('fontoxpath');
-
-const { sync } = require('../index');
-
-function stringForPosition(xmlString, pos) {
+function stringForPosition(xmlString: string, pos: any): string {
 	const correctSubString = xmlString.substring(pos.start, pos.end);
 	// console.log(xmlString, pos, correctSubString);
 	return correctSubString;
@@ -15,7 +12,7 @@ describe('doc types', () => {
 	const doc = sync(xml, { position: true });
 
 	test('the doctype declaration', () => {
-		const context = doc.firstChild;
+		const context = doc.firstChild as PositionTrackedNode;
 		const contextXml = `<!DOCTYPE test PUBLIC "test" "test">`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(0);
@@ -25,7 +22,7 @@ describe('doc types', () => {
 	});
 
 	test('the succesive element', () => {
-		const context = doc.firstChild.nextSibling;
+		const context = doc?.firstChild?.nextSibling as PositionTrackedNode;
 		const contextXml = `<x />`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(36);
@@ -40,7 +37,7 @@ describe('processing instructions', () => {
 	const doc = sync(xml, { position: true });
 
 	test('the processing instruction', () => {
-		const context = evaluateXPath('/processing-instruction()[1]', doc);
+		const context = evaluateXPath('/processing-instruction()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<?pi-target pi-data?>`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(0);
@@ -50,7 +47,7 @@ describe('processing instructions', () => {
 	});
 
 	test('the succesive element', () => {
-		const context = evaluateXPath('/element()[1]', doc);
+		const context = evaluateXPath('/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<x />`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(21);
@@ -62,7 +59,7 @@ describe('processing instructions', () => {
 	const xml2 = `<!DOCTYPE test PUBLIC "test" "test"><?pi-test    ?><x />`;
 	const doc2 = sync(xml2, { position: true });
 	test('processing instruction in the middle', () => {
-		const context = evaluateXPath('/processing-instruction()[1]', doc2);
+		const context = evaluateXPath('/processing-instruction()[1]', doc2) as PositionTrackedNode;
 		const contextXml = `<?pi-test    ?>`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(36);
@@ -78,12 +75,12 @@ it('comments', () => {
 		-->`;
 	const doc = sync(xml, { position: true });
 
-	const firstComment = evaluateXPath('/comment()[1]', doc);
+	const firstComment = evaluateXPath('/comment()[1]', doc) as PositionTrackedNode;
 	// expect(firstComment.position.line).toBe(1);
 	// expect(firstComment.position.column).toBe(1);
 	expect(stringForPosition(xml, firstComment.position)).toBe(`<!-- comment -->`);
 
-	const secondComment = evaluateXPath('/comment()[2]', doc);
+	const secondComment = evaluateXPath('/comment()[2]', doc) as PositionTrackedNode;
 	// expect(secondComment.position.line).toBe(1);
 	// expect(secondComment.position.column).toBe(22);
 	expect(stringForPosition(xml, secondComment.position)).toBe(`<!--
@@ -93,7 +90,7 @@ it('comments', () => {
 	// The following item should have the correct starting offset. This is explicitly tested because the end offset and
 	// column integers are +1'd for comment nodes as a fix for erratic behaviour from saxes.
 	// @TODO: Triage issue and tell saxes
-	const firstElement = evaluateXPath('/element()[1]', doc);
+	const firstElement = evaluateXPath('/element()[1]', doc) as PositionTrackedNode;
 	// expect(firstElement.position.line).toBe(1);
 	// expect(firstElement.position.column).toBe(17);
 	expect(stringForPosition(xml, firstElement.position)).toBe(`<x />`);
@@ -105,7 +102,7 @@ describe('elements', () => {
 	const doc = sync(xml, { position: true });
 
 	test('the root element instruction', () => {
-		const context = evaluateXPath('/element()[1]', doc);
+		const context = evaluateXPath('/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<root-node nerf="derp"
 		sk="z">`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -116,7 +113,7 @@ describe('elements', () => {
 	});
 
 	test('the child element', () => {
-		const context = evaluateXPath('/element()[1]/element()[1]', doc);
+		const context = evaluateXPath('/element()[1]/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<self-closing unit="" />`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(32);
@@ -129,7 +126,7 @@ describe('elements', () => {
 	const xml2 = `<x><a></a><b /><c></c></x>`;
 	const doc2 = sync(xml2, { position: true });
 	test('another child element', () => {
-		const context = evaluateXPath('/*/a', doc2);
+		const context = evaluateXPath('/*/a', doc2) as PositionTrackedNode;
 		const contextXml = `<a>`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(3);
@@ -138,7 +135,7 @@ describe('elements', () => {
 		expect(context.position.column).toBe(4);
 	});
 	test('a self-closing element', () => {
-		const context = evaluateXPath('/*/b', doc2);
+		const context = evaluateXPath('/*/b', doc2) as PositionTrackedNode;
 		const contextXml = `<b />`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(10);
@@ -147,7 +144,7 @@ describe('elements', () => {
 		expect(context.position.column).toBe(11);
 	});
 	test('another child element #2', () => {
-		const context = evaluateXPath('/*/c', doc2);
+		const context = evaluateXPath('/*/c', doc2) as PositionTrackedNode;
 		const contextXml = `<c>`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(15);
@@ -183,7 +180,9 @@ it('cdata', () => {
 			skrr
 		]]></x>`;
 	const doc = sync(xml, { position: true });
-	expect(stringForPosition(xml, doc.documentElement.firstChild.position)).toBe(`<![CDATA[
+	expect(
+		stringForPosition(xml, (doc?.documentElement?.firstChild as PositionTrackedNode).position)
+	).toBe(`<![CDATA[
 			skrr
 		]]>`);
 });
@@ -210,7 +209,7 @@ describe('Various things in a messy XML file', () => {
 
 	// KNOWN ISSUE the xml declaration is not picked up as a child node!
 	xtest('the doctype declaration', () => {
-		const context = doc.childNodes[1];
+		const context = doc.childNodes[1] as PositionTrackedNode;
 		const contextXml = `<!DOCTYPE test PUBLIC "test" "test">`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
 		expect(context.position.start).toBe(25);
@@ -220,7 +219,7 @@ describe('Various things in a messy XML file', () => {
 	});
 
 	test('the comment', () => {
-		const context = evaluateXPath('/comment()[1]', doc);
+		const context = evaluateXPath('/comment()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<!-- multi-line
 		comment -->`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -231,7 +230,7 @@ describe('Various things in a messy XML file', () => {
 	});
 
 	test('the root element', () => {
-		const context = evaluateXPath('/element()[1]', doc);
+		const context = evaluateXPath('/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<root attr="val">`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
 		// expect(context.position.start).toBe(173);
@@ -241,7 +240,7 @@ describe('Various things in a messy XML file', () => {
 	});
 
 	test('a multi-line child element', () => {
-		const context = evaluateXPath('/element()[1]/element()[2]', doc);
+		const context = evaluateXPath('/element()[1]/element()[2]', doc) as PositionTrackedNode;
 		const contextXml = `<a:root xmlns="http://default"
 			xmlns:a="http://a"
 			xmlns:b="http://b"
@@ -255,7 +254,7 @@ describe('Various things in a messy XML file', () => {
 	});
 
 	test('a multi-line text node', () => {
-		const context = evaluateXPath('//Q{http://a}root/text()[2]', doc);
+		const context = evaluateXPath('//Q{http://a}root/text()[2]', doc) as PositionTrackedNode;
 		const contextXml = `
 			snapje
 			`;
@@ -271,5 +270,5 @@ it('No position property if not tracking', () => {
 	const xml = `<x />`;
 	const doc = sync(xml, { position: false });
 
-	expect(doc.documentElement.position).toBeUndefined();
+	expect((doc.documentElement as any).position).toBeUndefined();
 });

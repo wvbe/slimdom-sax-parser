@@ -1,8 +1,6 @@
-/* eslint-env jest */
-
-const { evaluateXPath } = require('fontoxpath');
-
-const { sync } = require('../index');
+import { evaluateXPath } from 'fontoxpath';
+import { DocumentType } from 'slimdom';
+import { sync } from '../src/index';
 
 const types = {
 	ELEMENT_NODE: 1,
@@ -40,11 +38,11 @@ const doc = sync(
 );
 
 it('doc types', () => {
-	const subject = doc.firstChild;
-	expect(subject.nodeType).toBe(types.DOCUMENT_TYPE_NODE);
-	expect(subject.name).toBe('something');
-	expect(subject.publicId).toBe('-//example doctype//EN');
-	expect(subject.systemId).toBe('http://www.example.org/ns');
+	const subject = doc.firstChild as DocumentType;
+	expect(subject?.nodeType).toBe(types.DOCUMENT_TYPE_NODE);
+	expect(subject?.name).toBe('something');
+	expect(subject?.publicId).toBe('-//example doctype//EN');
+	expect(subject?.systemId).toBe('http://www.example.org/ns');
 });
 
 it('processing instructions', () => {
@@ -83,7 +81,7 @@ it('attributes', () => {
 });
 
 it('whitespace normalization in attributes', () => {
-	expect(doc.documentElement.getAttribute('whitespace')).toBe('before    after');
+	expect(doc.documentElement?.getAttribute('whitespace')).toBe('before    after');
 });
 
 it('text outside the root node will throw an error', () => {
@@ -96,5 +94,5 @@ it('whitespace outside the root node will notthrow an error', () => {
 
 it('XML declaration is not a processing instruction', () => {
 	const doc = sync(`<?xml version="1.0" encoding="UTF-8" standalone="no" ?><?derp ?><x />`);
-	expect(doc.firstChild.target).toBe('derp');
+	expect((doc.firstChild as any)?.target).toBe('derp');
 });

@@ -5,40 +5,39 @@ XML DOM implementation for browser and node.
 
 -   Parses text, elements, attributes, processing instructions, comments and CDATA
 -   Supports namespaces
--   Optionally track the position in XML string source
 -   Works in NodeJS and the browser
 
 ## Exports
 
--   `sync` (function) Synchronously return a slimdom Document for the given XML string.
+Has two named exports:
+
+-   `sync` (function) Synchronously return a slimdom Document for the given XML string:
 -   `slimdom` ([slimdom][slimdom-url]) A reference to the lib this parser is built around, as a convenience.
 
-```js
-import { sync, slimdom } from 'slimdom-sax-parser';
+The shape of the `sync` function is as follows;
+
+```ts
+function sync(
+	xml: string,
+	options?: saxes.SaxesOptions & {
+		additionalEntities?: {
+			[entityName: string]: string;
+		};
+	}
+): slimdom.Document;
 ```
 
-## Arguments
+See also [saxes.SaxesOptions](https://www.npmjs.com/package/saxes#parsing-xml-fragments) and the [standard DOM API](https://dom.spec.whatwg.org/#interface-document).
 
--   `xml` (string) The XML you want to parse as a string
--   `options` (object) Optional.
-    -   `position` (boolean) Set to `true` to track the `position` attribute on DOM nodes. Defaults to `false`.
-    -   `additionalNamespaces` (object) Prefix/URI mapping of namespaces that are not declared in XML
-    -   `additionalEntities` (object) Name/value mapping of entities. `slimdom-sax-parser` does not parse entity
-        definitions from XML.
+## Usage
 
 ```js
-sync('<foo />', { position: false });
+import { sync } from 'slimdom-sax-parser';
+
+const dom = sync('<xml foo="bar" />');
 ```
 
-## Returns
-
-A [slimdom][slimdom-url] [Document](https://dom.spec.whatwg.org/#interface-document) instance.
-
-```js
-const document = sync('<foo />');
-```
-
-# Examples
+## Examples
 
 Modify the XML DOM:
 
@@ -58,8 +57,8 @@ import { sync } from 'slimdom-sax-parser';
 import { evaluateXPath } from 'fontoxpath';
 
 const document = sync(`<foo><bar /><baz /></foo>`);
-const childElementsOfFoo = evaluateXPath('/foo/*', document);
-// childElementsOfFoo.length === 2
+const childNodeNames = evaluateXPath('/foo/*/name()', document);
+// childNodeNames equals ['bar', 'baz']
 ```
 
 Use source code position tracking:
@@ -83,7 +82,7 @@ const position = childElement.position;
 [saxes-url]: https://www.npmjs.com/package/saxes
 [slimdom-url]: https://www.npmjs.com/package/slimdom
 
-# License
+## License
 
 Copyright (c) 2019 Wybe Minnebo
 

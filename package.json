@@ -33,7 +33,7 @@
 		"build": "tsdx build",
 		"test": "tsdx test",
 		"lint": "echo \"Linting temporarily disabled\"",
-		"prepare": "tsdx build"
+		"prepare": "tsdx test && tsdx build"
 	},
 	"dependencies": {
 		"saxes": "^5.0.1",

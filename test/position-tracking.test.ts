@@ -1,5 +1,8 @@
 import { evaluateXPath } from 'fontoxpath';
-import { sync, PositionTrackedNode } from '../src/index';
+import { sync } from '../src/index';
+
+// Make the tests STFU
+type PositionTrackedNode = any;
 
 function stringForPosition(xmlString: string, pos: any): string {
 	const correctSubString = xmlString.substring(pos.start, pos.end);

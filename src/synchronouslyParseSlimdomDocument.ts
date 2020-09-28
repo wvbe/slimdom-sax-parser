@@ -1,19 +1,7 @@
-// import * as slimdom from 'slimdom';
 import * as saxes from 'saxes';
+import { DEFAULT_OPTIONS, SlimdomSaxParserOptions } from './options';
 
 import createHandler from './createHandler';
-
-export interface SlimdomSaxParserOptions extends saxes.SaxesOptions {
-	additionalEntities?: {
-		[entityName: string]: string;
-	};
-}
-
-export const DEFAULT_OPTIONS: SlimdomSaxParserOptions = {
-	xmlns: true,
-	position: false,
-	additionalEntities: {}
-};
 
 /**
  * Synchronously parse a string of XML to a Slimdom document.

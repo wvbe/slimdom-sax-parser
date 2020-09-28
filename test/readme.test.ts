@@ -1,5 +1,7 @@
-import { evaluateXPath } from 'fontoxpath';
-import { sync, slimdom } from '../src/index';
+import { Element } from 'slimdom';
+import { Readable } from 'stream';
+import { async, sync, slimdom } from '../src/index';
+import { evaluateXPath, evaluateXPathToNodes } from 'fontoxpath';
 
 // Asserts that the code examples in README.md are correct
 
@@ -27,4 +29,28 @@ it('Use source code position tracking', () => {
 
 	const position = childElement.position;
 	expect(xml.substring(position.start, position.end)).toBe('<child-element />');
+});
+
+it('Transform a XML file', async () => {
+	// Mock fs.
+	const fs = {
+		createReadStream: (_fileName: string) => {
+			return Readable.from(`<foo><bar /><bar /></foo>`);
+		},
+		promises: {
+			writeFile: async (_filePath: string, _content: string) => {}
+		}
+	};
+
+	const filePath = './file.xml';
+
+	const xmlStream = fs.createReadStream(filePath);
+	const document = await async(xmlStream);
+
+	const barNodes = evaluateXPathToNodes('//bar/*', document);
+	for (const barNode of barNodes) {
+		(barNode as Element).setAttribute('bar', 'baz');
+	}
+
+	await fs.promises.writeFile(filePath, slimdom.serializeToWellFormedString(document));
 });

@@ -11,8 +11,22 @@ XML DOM implementation for browser and node.
 
 Has two named exports:
 
+-   `async` (function) Asynchronously return a slimdom Document for the given XML string or Readable stream.
 -   `sync` (function) Synchronously return a slimdom Document for the given XML string:
 -   `slimdom` ([slimdom][slimdom-url]) A reference to the lib this parser is built around, as a convenience.
+
+The shape of the `async` function is as follows;
+
+```ts
+function async(
+	xml: string | stream.Readable,
+	options?: saxes.SaxesOptions & {
+		additionalEntities?: {
+			[entityName: string]: string;
+		};
+	}
+): slimdom.Document;
+```
 
 The shape of the `sync` function is as follows;
 
@@ -30,6 +44,12 @@ function sync(
 See also [saxes.SaxesOptions](https://www.npmjs.com/package/saxes#parsing-xml-fragments) and the [standard DOM API](https://dom.spec.whatwg.org/#interface-document).
 
 ## Usage
+
+```js
+import { async } from 'slimdom-sax-parser';
+
+const dom = await async('<xml foo="bar" />');
+```
 
 ```js
 import { sync } from 'slimdom-sax-parser';
@@ -76,6 +96,28 @@ const childElement = document.documentElement.firstChild;
 
 const position = childElement.position;
 // xml.substring(position.start, position.end) === '<child-element />'
+```
+
+Transform a XML file:
+
+```js
+import fs from 'fs';
+import { async, slimdom } from 'slimdom-sax-parser';
+import { evaluateXPathToNodes } from 'fontoxpath';
+
+async function transform(filePath) {
+	const xmlStream = fs.createReadStream(filePath);
+	const document = await async(xmlStream);
+
+	const barNodes = evaluateXPathToNodes('//bar/*', document);
+	for (const barNode of barNodes) {
+		barNode.setAttribute('bar', 'baz');
+	}
+
+	await fs.promises.writeFile(filePath, slimdom.serializeToWellFormedString(document));
+}
+
+transform('./file.xml');
 ```
 
 [fontoxpath-url]: https://www.npmjs.com/package/fontoxpath

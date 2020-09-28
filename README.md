@@ -24,6 +24,7 @@ function async(
 		additionalEntities?: {
 			[entityName: string]: string;
 		};
+		tagFilter?: (elementTag: saxes.SaxesTag, contextNode: any) => boolean;
 	}
 ): slimdom.Document;
 ```
@@ -37,6 +38,7 @@ function sync(
 		additionalEntities?: {
 			[entityName: string]: string;
 		};
+		tagFilter?: (elementTag: saxes.SaxesTag, contextNode: any) => boolean;
 	}
 ): slimdom.Document;
 ```
@@ -118,6 +120,51 @@ async function transform(filePath) {
 }
 
 transform('./file.xml');
+```
+
+Filter out tags while parsing:
+
+```js
+import { async } from 'slimdom-sax-parser';
+import { evaluateXPathToBoolean, evaluateXPathToNodes } from 'fontoxpath';
+
+const xmlStream = fs.createReadStream('./largeFile.xml');
+const document = await async(xmlStream, {
+	tagFilter: (tag, contextNode) => {
+		if (
+			tag.name === 'object' &&
+			tag.attributes['class'] &&
+			tag.attributes['class'].value === 'extraneousMetadata'
+		) {
+			return false;
+		} else if (
+			evaluateXPathToBoolean('self::properties', contextNode) &&
+			tag.name === 'irrelevantProperty'
+		) {
+			return false;
+		}
+
+		return true;
+	}
+});
+
+const importantMetadata = evaluateXPathToNodes('//object[@class = "importantMetadata"]', document);
+// expect(importantMetadata.length).toBe(2);
+
+const extraneousMetadata = evaluateXPathToNodes(
+	'//object[@class = "extraneousMetadata"]',
+	document
+);
+// expect(extraneousMetadata.length).toBe(0);
+
+const nested = evaluateXPathToNodes('//nested', document);
+// expect(nested.length).toBe(0);
+
+const relevantProperties = evaluateXPathToNodes('//properties/relevantProperty', document);
+// expect(relevantProperties.length).toBe(2);
+
+const irrelevantProperties = evaluateXPathToNodes('//properties/irrelevantProperty', document);
+// expect(irrelevantProperties.length).toBe(0);
 ```
 
 [fontoxpath-url]: https://www.npmjs.com/package/fontoxpath

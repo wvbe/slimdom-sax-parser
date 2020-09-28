@@ -1,6 +1,4 @@
 import slimdom, { Document } from 'slimdom';
-import createPositionTracker, { positionTrackerStubs } from './createPositionTracker';
-import createNamespaceContext from './createNamespaceContext';
 import {
 	CDataHandler,
 	CloseTagHandler,
@@ -13,6 +11,10 @@ import {
 	SaxesParser,
 	TextHandler
 } from 'saxes';
+
+import createPositionTracker, { positionTrackerStubs } from './createPositionTracker';
+import createNamespaceContext from './createNamespaceContext';
+import { SlimdomSaxParserOptions } from './options';
 
 export { Document } from 'slimdom';
 
@@ -30,7 +32,10 @@ type Handler = {
 /*
  * Create the required callbacks for populating a new document from sax event handlers
  */
-export default function createHandler(parser: SaxesParser, options: SaxesOptions): Handler {
+export default function createHandler(
+	parser: SaxesParser,
+	options: SlimdomSaxParserOptions
+): Handler {
 	// A new XML DOM object that has the same API as the browser DOM implementation, but isomorphic and supports
 	// namespaces.
 	const document = new slimdom.Document();
@@ -43,9 +48,16 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 
 	const [track, update] = options.position ? createPositionTracker(parser) : positionTrackerStubs;
 
+	const tagFilter = options.tagFilter;
+	let tagFilterParseLevel = 0;
+
 	// Return a bunch of methods that can be applied directly to a saxes parser instance.
 	return {
 		onText: text => {
+			if (tagFilterParseLevel) {
+				return;
+			}
+
 			if (contextNode === document) {
 				update();
 				return;
@@ -55,6 +67,16 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		},
 
 		onOpenTag: element => {
+			if (tagFilterParseLevel >= 1) {
+				tagFilterParseLevel++;
+				return;
+			}
+
+			if (tagFilter && !tagFilter(element, contextNode)) {
+				tagFilterParseLevel = 1;
+				return;
+			}
+
 			// More namespace declarations might be applicable
 			if (element.ns) {
 				namespaces.push(element.ns);
@@ -91,6 +113,11 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		},
 
 		onCloseTag: () => {
+			if (tagFilterParseLevel) {
+				tagFilterParseLevel--;
+				return;
+			}
+
 			// Update position tracking so that the closing tag of an element is not prepended to the following sibling
 			update();
 
@@ -106,16 +133,29 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		},
 
 		onProcessingInstruction: pi => {
+			if (tagFilterParseLevel) {
+				return;
+			}
+
 			contextNode.appendChild(
 				track(document.createProcessingInstruction(pi.target, pi.body))
 			);
 		},
 
 		onComment: comment => {
+			if (tagFilterParseLevel) {
+				return;
+			}
+
 			contextNode.appendChild(track(document.createComment(comment)));
 		},
 
 		onDocType: data => {
+			/* istanbul ignore if */
+			if (tagFilterParseLevel) {
+				return;
+			}
+
 			// @ts-ignore TS6133
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const [qualifiedName, _publicSystem, publicId, systemId] = Array.from(
@@ -134,6 +174,10 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		},
 
 		onCdata: string => {
+			if (tagFilterParseLevel) {
+				return;
+			}
+
 			contextNode.appendChild(track(document.createCDATASection(string)));
 		},
 

@@ -25,7 +25,7 @@ function async(
 			[entityName: string]: string;
 		};
 	}
-): slimdom.Document;
+): Promise<slimdom.Document>;
 ```
 
 The shape of the `sync` function is as follows;

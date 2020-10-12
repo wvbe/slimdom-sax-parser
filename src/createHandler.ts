@@ -41,7 +41,9 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 	// Helpers for other responsibilities
 	const namespaces = createNamespaceContext(options.additionalNamespaces || {});
 
-	const [track, update] = options.position ? createPositionTracker(parser) : positionTrackerStubs;
+	const [track, trackClose, update] = options.position
+		? createPositionTracker(parser)
+		: positionTrackerStubs;
 
 	// Return a bunch of methods that can be applied directly to a saxes parser instance.
 	return {
@@ -92,7 +94,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 
 		onCloseTag: () => {
 			// Update position tracking so that the closing tag of an element is not prepended to the following sibling
-			update();
+			trackClose(contextNode);
 
 			if (!contextNode.parentNode) {
 				throw new Error('End of the line!');

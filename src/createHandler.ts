@@ -1,6 +1,3 @@
-import slimdom, { Document } from 'slimdom';
-import createPositionTracker, { positionTrackerStubs } from './createPositionTracker';
-import createNamespaceContext from './createNamespaceContext';
 import {
 	CDataHandler,
 	CloseTagHandler,
@@ -13,6 +10,10 @@ import {
 	SaxesParser,
 	TextHandler
 } from 'saxes';
+import slimdom, { Document } from 'slimdom';
+import createNamespaceContext from './createNamespaceContext';
+import createPositionTracker, { positionTrackerStubs } from './createPositionTracker';
+import { parseDoctypeDeclaration } from './parseDoctypeDeclaration';
 
 export { Document } from 'slimdom';
 
@@ -118,18 +119,15 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		},
 
 		onDocType: data => {
-			// @ts-ignore TS6133
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const [qualifiedName, _publicSystem, publicId, systemId] = Array.from(
-				data.match(/(?:[^\s"]+|"[^"]*")+/g) || []
+			const { qualifiedName, publicId, systemId } = parseDoctypeDeclaration(
+				`<!DOCTYPE ${data}>`
 			);
-
 			contextNode.appendChild(
 				track(
 					document.implementation.createDocumentType(
 						qualifiedName,
-						(publicId && publicId.replace(/^"(.*)"$/, '$1')) || '',
-						(systemId && systemId.replace(/^"(.*)"$/, '$1')) || ''
+						publicId || '',
+						systemId || ''
 					)
 				)
 			);

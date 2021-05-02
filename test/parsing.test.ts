@@ -23,7 +23,7 @@ const doc = sync(
 	[
 		// Note that the following line is an XML version declaration. Not a PI (https://github.com/isaacs/sax-js/issues/178)
 		`<?xml version="1.0"?>`,
-		`<!DOCTYPE something PUBLIC "-//example doctype//EN" "http://www.example.org/ns">`,
+		`<!DOCTYPE something PUBLIC "-//example doctype//EN" "http://www.example.org/ns"[]>`,
 		`<?pi-target pi-data?>`,
 		`<!-- comment -->`,
 		`<root attr="val" whitespace="before\n\r\r\r\nafter">`,

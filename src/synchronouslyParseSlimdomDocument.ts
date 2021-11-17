@@ -20,7 +20,9 @@ export function sync(xml: string, options?: SlimdomSaxParserOptions) {
 	// opentagstart
 	// attribute
 	parser.on('opentag', handler.onOpenTag);
+	parser.on('opentagstart', handler.onOpenTagStart);
 	parser.on('closetag', handler.onCloseTag);
+	parser.on('attribute', handler.onAttribute);
 	parser.on('cdata', handler.onCdata);
 	// error
 	// end

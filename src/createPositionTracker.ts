@@ -1,5 +1,5 @@
 import { SaxesParser } from 'saxes';
-import { Node } from 'slimdom';
+import { Attr, Node } from 'slimdom';
 
 export type Position = {
 	line: number;
@@ -16,9 +16,25 @@ export type PositionTrackedElement = PositionTrackedNode & {
 	closePosition: Position;
 };
 
+export type PositionTrackedAttr = Attr & {
+	position: {
+		end: number;
+	}
+};
+
 export type PositionUpdater = () => void;
 
 export type PositionTracker = (node: Node) => PositionTrackedNode;
+
+export type AttrPositionTracker = (attr: Attr, endPosition: NextPosition) => PositionTrackedAttr;
+
+export interface NextPosition {
+	offset: number
+	line: number
+	column: number
+}
+
+export type GetNextPosition = () => NextPosition;
 
 export type ClosePositionTracker = (node: PositionTrackedNode) => PositionTrackedElement;
 
@@ -43,7 +59,7 @@ const types = {
  */
 export default function createPositionTracker(
 	parser: SaxesParser
-): [PositionTracker, ClosePositionTracker, PositionUpdater] {
+): [PositionTracker, ClosePositionTracker, PositionUpdater, GetNextPosition, AttrPositionTracker] {
 	let lastTrackedPosition = {
 		// Line and column numbers are 1-based
 		line: 1,
@@ -105,6 +121,14 @@ export default function createPositionTracker(
 		return <PositionTrackedNode>node;
 	}
 
+	function trackAttribute(attr: Attr, endPosition: NextPosition): PositionTrackedAttr {
+		(<PositionTrackedAttr>attr).position = {
+			end: endPosition.offset,
+		}
+
+		return <PositionTrackedAttr>attr;
+	}
+
 	function trackClose(node: PositionTrackedNode) {
 		const endPosition = getNextPosition(node);
 
@@ -120,7 +144,7 @@ export default function createPositionTracker(
 		return <PositionTrackedElement>node;
 	}
 
-	return [track, trackClose, update];
+	return [track, trackClose, update, getNextPosition, trackAttribute];
 }
 
 /**
@@ -132,5 +156,9 @@ export const positionTrackerStubs = [
 	// Stub trackClose()
 	(node?: any) => node,
 	// Stub update()
-	() => {}
+	() => {},
+	// Stub getPosition()
+	() => ({}),
+	// Stub trackAttribute()
+	(attr?: any) => attr,
 ];

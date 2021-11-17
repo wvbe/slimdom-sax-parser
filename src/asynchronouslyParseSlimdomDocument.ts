@@ -26,6 +26,7 @@ export function async(
 		// opentagstart
 		// attribute
 		parser.on('opentag', handler.onOpenTag);
+		parser.on('opentagstart', handler.onOpenTagStart);
 		parser.on('closetag', handler.onCloseTag);
 		parser.on('cdata', handler.onCdata);
 		parser.on('error', error => {

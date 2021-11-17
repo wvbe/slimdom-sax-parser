@@ -1,18 +1,22 @@
 import {
+	AttributeHandler,
 	CDataHandler,
 	CloseTagHandler,
 	CommentHandler,
 	DoctypeHandler,
 	OpenTagHandler,
-	PIHandler,
-	SaxesAttributeNS,
+	OpenTagStartHandler,
+	PIHandler, SaxesAttributeNS,
 	SaxesOptions,
 	SaxesParser,
 	TextHandler
 } from 'saxes';
 import slimdom, { Document } from 'slimdom';
 import createNamespaceContext from './createNamespaceContext';
-import createPositionTracker, { positionTrackerStubs } from './createPositionTracker';
+import createPositionTracker, {
+	NextPosition,
+	positionTrackerStubs
+} from './createPositionTracker';
 import { parseDoctypeDeclaration } from './parseDoctypeDeclaration';
 
 export { Document } from 'slimdom';
@@ -20,7 +24,9 @@ export { Document } from 'slimdom';
 type Handler = {
 	onText: TextHandler;
 	onOpenTag: OpenTagHandler<SaxesOptions>;
+	onOpenTagStart: OpenTagStartHandler<SaxesOptions>;
 	onCloseTag: CloseTagHandler<SaxesOptions>;
+	onAttribute: AttributeHandler<{ xmlns: true, position: true }>;
 	onProcessingInstruction: PIHandler;
 	onComment: CommentHandler;
 	onDocType: DoctypeHandler;
@@ -42,9 +48,11 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 	// Helpers for other responsibilities
 	const namespaces = createNamespaceContext(options.additionalNamespaces || {});
 
-	const [track, trackClose, update] = options.position
+	const [track, trackClose, update, getNextPosition, trackAttribute] = options.position
 		? createPositionTracker(parser)
 		: positionTrackerStubs;
+
+	let attributePositions: Map<string, NextPosition> = new Map()
 
 	// Return a bunch of methods that can be applied directly to a saxes parser instance.
 	return {
@@ -68,7 +76,6 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 			}
 			const node = track(document.createElementNS(nsLocation, element.name));
 
-			// Set attributes, taking the accumulated namespace information into account
 			Object.keys(element.attributes)
 				.map(name => element.attributes[name])
 				.forEach((attr: string | SaxesAttributeNS) => {
@@ -86,11 +93,22 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 						namespaceURI = namespaces.location('xmlns');
 					}
 
-					node.setAttributeNS(namespaceURI, attr.name, attr.value);
+					const position = attributePositions.get(attr.name)!
+					const attributeNode = trackAttribute(document.createAttributeNS(namespaceURI!, attr.name), position!)
+					attributeNode.value = attr.value
+					node.setAttributeNode(attributeNode);
 				});
 
 			contextNode.appendChild(node);
 			contextNode = node;
+		},
+
+		onOpenTagStart: () => {
+			attributePositions = new Map()
+		},
+
+		onAttribute: attribute => {
+			attributePositions.set(attribute.name, getNextPosition())
 		},
 
 		onCloseTag: () => {

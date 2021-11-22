@@ -19,7 +19,7 @@ export type PositionTrackedElement = PositionTrackedNode & {
 export type PositionTrackedAttr = Attr & {
 	position: {
 		end: number;
-	}
+	};
 };
 
 export type PositionUpdater = () => void;
@@ -29,9 +29,9 @@ export type PositionTracker = (node: Node) => PositionTrackedNode;
 export type AttrPositionTracker = (attr: Attr, endPosition: NextPosition) => PositionTrackedAttr;
 
 export interface NextPosition {
-	offset: number
-	line: number
-	column: number
+	offset: number;
+	line: number;
+	column: number;
 }
 
 export type GetNextPosition = () => NextPosition;
@@ -68,6 +68,43 @@ export default function createPositionTracker(
 		// Offset (start + end) are 0-based
 		offset: 0
 	};
+	// Updates the tracker with new input from the saxes parser, and writes a "position" property to the DOM node
+	// that was passed.
+	function track(node: Node): PositionTrackedNode {
+		const endPosition = getNextPosition(node);
+
+		(<PositionTrackedNode>node).position = {
+			line: lastTrackedPosition.line,
+			column: lastTrackedPosition.column,
+			start: lastTrackedPosition.offset,
+			end: endPosition.offset
+		};
+
+		lastTrackedPosition = endPosition;
+
+		return <PositionTrackedNode>node;
+	}
+
+	function trackClose(node: PositionTrackedNode) {
+		const endPosition = getNextPosition(node);
+
+		(<PositionTrackedElement>node).closePosition = {
+			line: lastTrackedPosition.line,
+			column: lastTrackedPosition.column,
+			start: lastTrackedPosition.offset,
+			end: endPosition.offset
+		};
+
+		lastTrackedPosition = endPosition;
+
+		return <PositionTrackedElement>node;
+	}
+
+	function update(): void {
+		const endPosition = getNextPosition();
+
+		lastTrackedPosition = endPosition;
+	}
 
 	// Fixes some quirky results from saxes' position tracking:
 	// - XML comments were always one character short
@@ -98,50 +135,12 @@ export default function createPositionTracker(
 		return position;
 	}
 
-	function update(): void {
-		const endPosition = getNextPosition();
-
-		lastTrackedPosition = endPosition;
-	}
-
-	// Updates the tracker with new input from the saxes parser, and writes a "position" property to the DOM node
-	// that was passed.
-	function track(node: Node): PositionTrackedNode {
-		const endPosition = getNextPosition(node);
-
-		(<PositionTrackedNode>node).position = {
-			line: lastTrackedPosition.line,
-			column: lastTrackedPosition.column,
-			start: lastTrackedPosition.offset,
-			end: endPosition.offset
-		};
-
-		lastTrackedPosition = endPosition;
-
-		return <PositionTrackedNode>node;
-	}
-
 	function trackAttribute(attr: Attr, endPosition: NextPosition): PositionTrackedAttr {
 		(<PositionTrackedAttr>attr).position = {
-			end: endPosition.offset,
-		}
-
-		return <PositionTrackedAttr>attr;
-	}
-
-	function trackClose(node: PositionTrackedNode) {
-		const endPosition = getNextPosition(node);
-
-		(<PositionTrackedElement>node).closePosition = {
-			line: lastTrackedPosition.line,
-			column: lastTrackedPosition.column,
-			start: lastTrackedPosition.offset,
 			end: endPosition.offset
 		};
 
-		lastTrackedPosition = endPosition;
-
-		return <PositionTrackedElement>node;
+		return <PositionTrackedAttr>attr;
 	}
 
 	return [track, trackClose, update, getNextPosition, trackAttribute];
@@ -160,5 +159,5 @@ export const positionTrackerStubs = [
 	// Stub getPosition()
 	() => ({}),
 	// Stub trackAttribute()
-	(attr?: any) => attr,
+	(attr?: any) => attr
 ];

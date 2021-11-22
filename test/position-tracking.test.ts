@@ -1,4 +1,4 @@
-import { evaluateXPath } from 'fontoxpath';
+import { evaluateXPath, evaluateXPathToNodes } from 'fontoxpath';
 import { sync } from '../src/index';
 
 // Make the tests STFU
@@ -219,6 +219,44 @@ describe('elements', () => {
 		expect(context.closePosition.line).toBe(1);
 		expect(context.closePosition.column).toBe(19);
 	});
+});
+
+it('attributes', () => {
+	const xml = `<bar xmlns:x="http://skeet" test1="val1" test2="val2"   test3="val3"     test4="val4"
+		test5="val5" test6="va
+
+			l
+
+		6"  x:test7="val7"
+	/>`;
+	const doc = sync(xml, { position: true });
+
+	const [test1, test2, test3, test4, test5, test6, test7] = evaluateXPathToNodes(
+		'/*/attribute()',
+		doc
+	) as PositionTrackedNode;
+
+	expect(test1.value).toBe('val1');
+	expect(test1.position.end).toBe(40);
+
+	expect(test2.value).toBe('val2');
+	expect(test2.position.end).toBe(40 + 13);
+
+	expect(test3.value).toBe('val3');
+	expect(test3.position.end).toBe(40 + 13 + 15);
+
+	expect(test4.value).toBe('val4');
+	expect(test4.position.end).toBe(40 + 13 + 15 + 17);
+
+	expect(test5.value).toBe('val5');
+	expect(test5.position.end).toBe(40 + 13 + 15 + 17 + 15);
+
+	//  Newlines and tabs are each converted to a single space
+	expect(test6.value).toBe('va     l    6');
+	expect(test6.position.end).toBe(40 + 13 + 15 + 17 + 15 + 22);
+
+	expect(test7.value).toBe('val7');
+	expect(test7.position.end).toBe(40 + 13 + 15 + 17 + 15 + 22 + 16);
 });
 
 it('text nodes', () => {

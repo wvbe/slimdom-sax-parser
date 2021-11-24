@@ -1,7 +1,7 @@
 {
 	"name": "slimdom-sax-parser",
-	"version": "1.4.1",
-	"description": "Parses XML to a Slimdom document using Sax",
+	"version": "1.5.0",
+	"description": "Parse an XML string to a light-weight spec-compliant document object model, for browser and Node",
 	"repository": "wvbe/slimdom-sax-parser",
 	"author": {
 		"name": "Wybe Minnebo",
@@ -32,18 +32,18 @@
 		"start": "tsdx watch",
 		"build": "tsdx build",
 		"test": "tsdx test",
-		"lint": "echo \"Linting temporarily disabled\"",
-		"prepare": "tsdx test && tsdx build"
+		"lint": "tsdx lint",
+		"prepare": "tsdx lint && tsdx test && tsdx build"
 	},
 	"dependencies": {
-		"saxes": "^5.0.1",
+		"saxes": "^6.0.0",
 		"slimdom": "^2.3.2"
 	},
 	"devDependencies": {
-		"fontoxpath": "^3.13.3",
-		"tsdx": "^0.13.3",
-		"tslib": "^2.0.1",
-		"typescript": "^4.0.2"
+		"fontoxpath": "^3.21.0",
+		"tsdx": "^0.14.1",
+		"tslib": "^2.3.1",
+		"typescript": "^4.5.2"
 	},
 	"peerDependencies": {},
 	"prettier": {

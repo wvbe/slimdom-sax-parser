@@ -1,12 +1,12 @@
 import * as saxes from 'saxes';
 
-export interface SlimdomSaxParserOptions extends saxes.SaxesOptions {
+export interface Options extends saxes.SaxesOptions {
 	additionalEntities?: {
 		[entityName: string]: string;
 	};
 }
 
-export const DEFAULT_OPTIONS: SlimdomSaxParserOptions = {
+export const DEFAULT_OPTIONS: Options = {
 	xmlns: true,
 	position: false,
 	additionalEntities: {}

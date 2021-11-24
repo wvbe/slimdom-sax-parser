@@ -1,21 +1,18 @@
 import * as saxes from 'saxes';
-import { DEFAULT_OPTIONS, SlimdomSaxParserOptions } from './options';
+import { DEFAULT_OPTIONS, Options } from './options';
 
 import createHandler from './createHandler';
 
 /**
  * Synchronously parse a string of XML to a Slimdom document.
  */
-export function sync(xml: string, options?: SlimdomSaxParserOptions) {
+export function sync(xml: string, options?: Options) {
 	// Set up the sax parser
 	const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
 	const parser = new saxes.SaxesParser(mergedOptions);
 	const handler = createHandler(parser, mergedOptions);
 
-	// end
-	// error
-	// ready
-	// xmldecl
+	// Bind the handler functions to saxes events
 	parser.on('attribute', handler.onAttribute);
 	parser.on('cdata', handler.onCdata);
 	parser.on('closetag', handler.onCloseTag);
@@ -26,6 +23,7 @@ export function sync(xml: string, options?: SlimdomSaxParserOptions) {
 	parser.on('processinginstruction', handler.onProcessingInstruction);
 	parser.on('text', handler.onText);
 
+	// Handle additionalEntities
 	if (options !== undefined && options.additionalEntities !== undefined) {
 		for (const [entity, entityValue] of Object.entries(options.additionalEntities)) {
 			parser.ENTITIES[entity] = entityValue;

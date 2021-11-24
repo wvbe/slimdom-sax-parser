@@ -257,6 +257,10 @@ it('attributes', () => {
 
 	expect(test7.value).toBe('val7');
 	expect(test7.position.end).toBe(40 + 13 + 15 + 17 + 15 + 22 + 16);
+
+	// Duplicately defined attributes do not need to be tested on position tracking, because saxes
+	// would error out on it.
+	expect(() => sync(`<x a="b" a="b" />`)).toThrow('duplicate attribute');
 });
 
 it('text nodes', () => {

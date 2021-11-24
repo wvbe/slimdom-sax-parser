@@ -18,22 +18,22 @@ export function async(
 		const parser = new saxes.SaxesParser(mergedOptions);
 		const handler = createHandler(parser, mergedOptions);
 
-		parser.on('text', handler.onText);
-		// xmldecl
-		parser.on('processinginstruction', handler.onProcessingInstruction);
-		parser.on('doctype', handler.onDocType);
-		parser.on('comment', handler.onComment);
+		// end
 		// opentagstart
-		// attribute
-		parser.on('opentag', handler.onOpenTag);
-		parser.on('opentagstart', handler.onOpenTagStart);
-		parser.on('closetag', handler.onCloseTag);
+		// ready
+		// xmldecl
+		parser.on('attribute', handler.onAttribute);
 		parser.on('cdata', handler.onCdata);
+		parser.on('closetag', handler.onCloseTag);
+		parser.on('comment', handler.onComment);
+		parser.on('doctype', handler.onDocType);
 		parser.on('error', error => {
 			reject(error);
 		});
-		// end
-		// ready
+		parser.on('opentag', handler.onOpenTag);
+		parser.on('opentagstart', handler.onOpenTagStart);
+		parser.on('processinginstruction', handler.onProcessingInstruction);
+		parser.on('text', handler.onText);
 
 		// @TODO remove ths and methods on handler
 		// parser.on('closecdata', handler.onCloseCdata);

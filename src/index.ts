@@ -2,5 +2,5 @@
 import * as _slimdom from 'slimdom';
 export const slimdom = _slimdom;
 
-export * from './asynchronouslyParseSlimdomDocument';
-export * from './synchronouslyParseSlimdomDocument';
+export { async } from './asynchronouslyParseSlimdomDocument';
+export { sync } from './synchronouslyParseSlimdomDocument';

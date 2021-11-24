@@ -12,25 +12,19 @@ export function sync(xml: string, options?: SlimdomSaxParserOptions) {
 	const parser = new saxes.SaxesParser(mergedOptions);
 	const handler = createHandler(parser, mergedOptions);
 
-	parser.on('text', handler.onText);
+	// end
+	// error
+	// ready
 	// xmldecl
-	parser.on('processinginstruction', handler.onProcessingInstruction);
-	parser.on('doctype', handler.onDocType);
-	parser.on('comment', handler.onComment);
-	// opentagstart
-	// attribute
-	parser.on('opentag', handler.onOpenTag);
-	parser.on('opentagstart', handler.onOpenTagStart);
-	parser.on('closetag', handler.onCloseTag);
 	parser.on('attribute', handler.onAttribute);
 	parser.on('cdata', handler.onCdata);
-	// error
-	// end
-	// ready
-
-	// @TODO remove ths and methods on handler
-	// parser.on('closecdata', handler.onCloseCdata);
-	// parser.on('opencdata', handler.onOpenCdata);
+	parser.on('closetag', handler.onCloseTag);
+	parser.on('comment', handler.onComment);
+	parser.on('doctype', handler.onDocType);
+	parser.on('opentag', handler.onOpenTag);
+	parser.on('opentagstart', handler.onOpenTagStart);
+	parser.on('processinginstruction', handler.onProcessingInstruction);
+	parser.on('text', handler.onText);
 
 	if (options !== undefined && options.additionalEntities !== undefined) {
 		for (const [entity, entityValue] of Object.entries(options.additionalEntities)) {

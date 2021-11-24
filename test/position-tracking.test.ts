@@ -1,5 +1,5 @@
 import { evaluateXPath, evaluateXPathToNodes } from 'fontoxpath';
-import { sync } from '../src/index';
+import { sync, async } from '../src/index';
 
 // Make the tests STFU
 type PositionTrackedNode = any;
@@ -261,6 +261,16 @@ it('attributes', () => {
 	// Duplicately defined attributes do not need to be tested on position tracking, because saxes
 	// would error out on it.
 	expect(() => sync(`<x a="b" a="b" />`)).toThrow('duplicate attribute');
+});
+
+it('async attributes', async () => {
+	const xml = `<bar xmlns:x="http://skeet" test1="val1" />`;
+	const doc = await async(xml, { position: true });
+
+	const [test1] = evaluateXPathToNodes('/*/attribute()', doc) as PositionTrackedNode;
+
+	expect(test1.value).toBe('val1');
+	expect(test1.position.end).toBe(40);
 });
 
 it('text nodes', () => {

@@ -98,7 +98,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 					const position = attributePositions.get(attr.name)!;
 					const attributeNode = trackAttributePosition(
 						document.createAttributeNS(namespaceURI!, attr.name),
-						position!
+						position
 					);
 					attributeNode.value = attr.value;
 					node.setAttributeNode(attributeNode);

@@ -6,17 +6,15 @@ import {
 	DoctypeHandler,
 	OpenTagHandler,
 	OpenTagStartHandler,
-	PIHandler, SaxesAttributeNS,
+	PIHandler,
+	SaxesAttributeNS,
 	SaxesOptions,
 	SaxesParser,
 	TextHandler
 } from 'saxes';
 import slimdom, { Document } from 'slimdom';
 import createNamespaceContext from './createNamespaceContext';
-import createPositionTracker, {
-	NextPosition,
-	positionTrackerStubs
-} from './createPositionTracker';
+import createPositionTracker, { Position, positionTrackerStubs } from './createPositionTracker';
 import { parseDoctypeDeclaration } from './parseDoctypeDeclaration';
 
 export { Document } from 'slimdom';
@@ -26,7 +24,7 @@ type Handler = {
 	onOpenTag: OpenTagHandler<SaxesOptions>;
 	onOpenTagStart: OpenTagStartHandler<SaxesOptions>;
 	onCloseTag: CloseTagHandler<SaxesOptions>;
-	onAttribute: AttributeHandler<{ xmlns: true, position: true }>;
+	onAttribute: AttributeHandler<{ xmlns: true; position: true }>;
 	onProcessingInstruction: PIHandler;
 	onComment: CommentHandler;
 	onDocType: DoctypeHandler;
@@ -48,20 +46,24 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 	// Helpers for other responsibilities
 	const namespaces = createNamespaceContext(options.additionalNamespaces || {});
 
-	const [track, trackClose, update, getNextPosition, trackAttribute] = options.position
-		? createPositionTracker(parser)
-		: positionTrackerStubs;
+	const {
+		trackNodePosition,
+		trackNodeClosePosition,
+		updateLastTrackedPosition,
+		getCurrentPosition,
+		trackAttributePosition
+	} = options.position ? createPositionTracker(parser) : positionTrackerStubs;
 
-	let attributePositions: Map<string, NextPosition> = new Map()
+	let attributePositions: Map<string, Position> = new Map();
 
 	// Return a bunch of methods that can be applied directly to a saxes parser instance.
 	return {
 		onText: text => {
 			if (contextNode === document) {
-				update();
+				updateLastTrackedPosition();
 				return;
 			}
-			const textNode = track(document.createTextNode(text));
+			const textNode = trackNodePosition(document.createTextNode(text));
 			contextNode.appendChild(textNode);
 		},
 
@@ -74,7 +76,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 			if (nsLocation === undefined) {
 				throw new Error(`Could not resolve a namespace location for "${element.prefix}"`);
 			}
-			const node = track(document.createElementNS(nsLocation, element.name));
+			const node = trackNodePosition(document.createElementNS(nsLocation, element.name));
 
 			Object.keys(element.attributes)
 				.map(name => element.attributes[name])
@@ -93,9 +95,12 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 						namespaceURI = namespaces.location('xmlns');
 					}
 
-					const position = attributePositions.get(attr.name)!
-					const attributeNode = trackAttribute(document.createAttributeNS(namespaceURI!, attr.name), position!)
-					attributeNode.value = attr.value
+					const position = attributePositions.get(attr.name)!;
+					const attributeNode = trackAttributePosition(
+						document.createAttributeNS(namespaceURI!, attr.name),
+						position!
+					);
+					attributeNode.value = attr.value;
 					node.setAttributeNode(attributeNode);
 				});
 
@@ -104,16 +109,16 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		},
 
 		onOpenTagStart: () => {
-			attributePositions = new Map()
+			attributePositions = new Map();
 		},
 
 		onAttribute: attribute => {
-			attributePositions.set(attribute.name, getNextPosition())
+			attributePositions.set(attribute.name, getCurrentPosition());
 		},
 
 		onCloseTag: () => {
 			// Update position tracking so that the closing tag of an element is not prepended to the following sibling
-			trackClose(contextNode);
+			trackNodeClosePosition(contextNode);
 
 			if (!contextNode.parentNode) {
 				throw new Error('End of the line!');
@@ -128,12 +133,12 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 
 		onProcessingInstruction: pi => {
 			contextNode.appendChild(
-				track(document.createProcessingInstruction(pi.target, pi.body))
+				trackNodePosition(document.createProcessingInstruction(pi.target, pi.body))
 			);
 		},
 
 		onComment: comment => {
-			contextNode.appendChild(track(document.createComment(comment)));
+			contextNode.appendChild(trackNodePosition(document.createComment(comment)));
 		},
 
 		onDocType: data => {
@@ -141,7 +146,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 				`<!DOCTYPE ${data}>`
 			);
 			contextNode.appendChild(
-				track(
+				trackNodePosition(
 					document.implementation.createDocumentType(
 						qualifiedName,
 						publicId || '',
@@ -152,7 +157,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		},
 
 		onCdata: string => {
-			contextNode.appendChild(track(document.createCDATASection(string)));
+			contextNode.appendChild(trackNodePosition(document.createCDATASection(string)));
 		},
 
 		document: document

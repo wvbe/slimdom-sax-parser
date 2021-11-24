@@ -114,7 +114,7 @@ it('Honors options in when asynchronously parsing xml', async () => {
 
 	const context = doc.firstChild;
 	const contextXml = `<!DOCTYPE test PUBLIC "test" "test">`;
-	const position = (context as PositionTrackedNode).position;
+	const position = (context as PositionTrackedNode<Element>).position;
 	expect(xmlContent.substring(position.start, position.end)).toBe(contextXml);
 	expect(position.start).toBe(0);
 	expect(position.end).toBe(36);

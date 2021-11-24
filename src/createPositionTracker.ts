@@ -1,65 +1,78 @@
 import { SaxesParser } from 'saxes';
 import { Attr, Node } from 'slimdom';
 
+/**
+ * The helper functions to track node positions.
+ */
+type PositionTracker = {
+	trackNodePosition<N extends Node>(node: N): PositionTrackedNode<N>;
+	trackNodeClosePosition<N extends Node>(node: PositionTrackedNode<N>): PositionTrackedElement<N>;
+	updateLastTrackedPosition(): void;
+	getCurrentPosition(): Position;
+	trackAttributePosition<A extends Attr>(attr: A, endPosition: Position): PositionTrackedAttr<A>;
+};
+
+/**
+ * One (collapsed) location in code. `offset` is equal to the length of all preceding lines + column.
+ */
 export type Position = {
+	offset: number;
+	line: number;
+	column: number;
+};
+
+/**
+ * A location in code, possibly spanning text. `start` and `end` are both offsets from the start of
+ * the XML source.
+ */
+export type PositionRange = {
 	line: number;
 	column: number;
 	start: number;
 	end: number;
 };
 
-export type PositionTrackedNode = Node & {
-	position: Position;
+/**
+ * Various properties on nodes that contain the position information.
+ */
+export type PositionTrackedNode<N> = N & {
+	position: PositionRange;
 };
-
-export type PositionTrackedElement = PositionTrackedNode & {
-	closePosition: Position;
+export type PositionTrackedElement<N> = PositionTrackedNode<N> & {
+	closePosition: PositionRange;
 };
-
-export type PositionTrackedAttr = Attr & {
+export type PositionTrackedAttr<A> = A & {
 	position: {
 		end: number;
 	};
 };
 
-export type PositionUpdater = () => void;
-
-export type PositionTracker = (node: Node) => PositionTrackedNode;
-
-export type AttrPositionTracker = (attr: Attr, endPosition: NextPosition) => PositionTrackedAttr;
-
-export interface NextPosition {
-	offset: number;
-	line: number;
-	column: number;
-}
-
-export type GetNextPosition = () => NextPosition;
-
-export type ClosePositionTracker = (node: PositionTrackedNode) => PositionTrackedElement;
-
+/**
+ * The DOM node types enumeration. Only TEXT_NODE and COMMENT_NODE are used, so the rest is commented out.
+ *
+ * See also:
+ *   https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
+ */
 const types = {
-	ELEMENT_NODE: 1,
-	ATTRIBUTE_NODE: 2,
+	// ELEMENT_NODE: 1,
+	// ATTRIBUTE_NODE: 2,
 	TEXT_NODE: 3,
-	CDATA_SECTION_NODE: 4,
-	ENTITY_REFERENCE_NODE: 5,
-	ENTITY_NODE: 6,
-	PROCESSING_INSTRUCTION_NODE: 7,
-	COMMENT_NODE: 8,
-	DOCUMENT_NODE: 9,
-	DOCUMENT_TYPE_NODE: 10,
-	DOCUMENT_FRAGMENT_NODE: 11,
-	NOTATION_NODE: 12
+	// CDATA_SECTION_NODE: 4,
+	// ENTITY_REFERENCE_NODE: 5,
+	// ENTITY_NODE: 6,
+	// PROCESSING_INSTRUCTION_NODE: 7,
+	COMMENT_NODE: 8
+	// DOCUMENT_NODE: 9,
+	// DOCUMENT_TYPE_NODE: 10,
+	// DOCUMENT_FRAGMENT_NODE: 11,
+	// NOTATION_NODE: 12
 };
 
 /**
  * Create the context needed to track the positions in an XML string at which a Slimdom node was defined. Is based on
  * input from the saxes parser and fixes some unexpected behaviour by it.
  */
-export default function createPositionTracker(
-	parser: SaxesParser
-): [PositionTracker, ClosePositionTracker, PositionUpdater, GetNextPosition, AttrPositionTracker] {
+export default function createPositionTracker(parser: SaxesParser): PositionTracker {
 	let lastTrackedPosition = {
 		// Line and column numbers are 1-based
 		line: 1,
@@ -68,47 +81,14 @@ export default function createPositionTracker(
 		// Offset (start + end) are 0-based
 		offset: 0
 	};
-	// Updates the tracker with new input from the saxes parser, and writes a "position" property to the DOM node
-	// that was passed.
-	function track(node: Node): PositionTrackedNode {
-		const endPosition = getNextPosition(node);
 
-		(<PositionTrackedNode>node).position = {
-			line: lastTrackedPosition.line,
-			column: lastTrackedPosition.column,
-			start: lastTrackedPosition.offset,
-			end: endPosition.offset
-		};
-
-		lastTrackedPosition = endPosition;
-
-		return <PositionTrackedNode>node;
-	}
-
-	function trackClose(node: PositionTrackedNode) {
-		const endPosition = getNextPosition(node);
-
-		(<PositionTrackedElement>node).closePosition = {
-			line: lastTrackedPosition.line,
-			column: lastTrackedPosition.column,
-			start: lastTrackedPosition.offset,
-			end: endPosition.offset
-		};
-
-		lastTrackedPosition = endPosition;
-
-		return <PositionTrackedElement>node;
-	}
-
-	function update(): void {
-		const endPosition = getNextPosition();
-
-		lastTrackedPosition = endPosition;
+	function updateLastTrackedPosition(): void {
+		lastTrackedPosition = getCurrentPosition();
 	}
 
 	// Fixes some quirky results from saxes' position tracking:
 	// - XML comments were always one character short
-	function getNextPosition(node?: Node) {
+	function getCurrentPosition<N extends Node>(node?: N) {
 		const position = {
 			offset: parser.position,
 			line: parser.line,
@@ -135,29 +115,65 @@ export default function createPositionTracker(
 		return position;
 	}
 
-	function trackAttribute(attr: Attr, endPosition: NextPosition): PositionTrackedAttr {
-		(<PositionTrackedAttr>attr).position = {
+	// Updates the tracker with new input from the saxes parser, and writes a "position" property to the DOM node
+	// that was passed.
+	function trackNodePosition<N extends Node>(node: N): PositionTrackedNode<N> {
+		const endPosition = getCurrentPosition(node);
+
+		(node as PositionTrackedNode<N>).position = {
+			line: lastTrackedPosition.line,
+			column: lastTrackedPosition.column,
+			start: lastTrackedPosition.offset,
 			end: endPosition.offset
 		};
 
-		return <PositionTrackedAttr>attr;
+		lastTrackedPosition = endPosition;
+
+		return node as PositionTrackedNode<N>;
 	}
 
-	return [track, trackClose, update, getNextPosition, trackAttribute];
+	function trackNodeClosePosition<N extends Node>(node: PositionTrackedNode<N>) {
+		const endPosition = getCurrentPosition(node);
+
+		(node as PositionTrackedElement<N>).closePosition = {
+			line: lastTrackedPosition.line,
+			column: lastTrackedPosition.column,
+			start: lastTrackedPosition.offset,
+			end: endPosition.offset
+		};
+
+		lastTrackedPosition = endPosition;
+
+		return node as PositionTrackedElement<N>;
+	}
+
+	function trackAttributePosition<A extends Attr>(
+		attr: A,
+		endPosition: Position
+	): PositionTrackedAttr<A> {
+		(attr as PositionTrackedAttr<A>).position = {
+			end: endPosition.offset
+		};
+
+		return attr as PositionTrackedAttr<A>;
+	}
+
+	return {
+		getCurrentPosition,
+		trackAttributePosition,
+		trackNodeClosePosition,
+		trackNodePosition,
+		updateLastTrackedPosition
+	};
 }
 
 /**
  * No-op alternative for position tracking, when position tracking is disabled.
  */
-export const positionTrackerStubs = [
-	// Stub track()
-	(node?: any) => node,
-	// Stub trackClose()
-	(node?: any) => node,
-	// Stub update()
-	() => {},
-	// Stub getPosition()
-	() => ({}),
-	// Stub trackAttribute()
-	(attr?: any) => attr
-];
+export const positionTrackerStubs: PositionTracker = {
+	getCurrentPosition: () => ({ offset: 0, line: 0, column: 0 }),
+	trackAttributePosition: (attr?: any) => attr,
+	trackNodeClosePosition: (node?: any) => node,
+	trackNodePosition: (node?: any) => node,
+	updateLastTrackedPosition: () => {}
+};

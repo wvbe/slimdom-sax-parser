@@ -1,6 +1,6 @@
 {
 	"name": "slimdom-sax-parser",
-	"version": "1.5.0",
+	"version": "1.5.1",
 	"description": "Parse an XML string to a light-weight spec-compliant document object model, for browser and Node",
 	"repository": "wvbe/slimdom-sax-parser",
 	"author": {
@@ -36,16 +36,15 @@
 		"prepare": "tsdx lint && tsdx test && tsdx build"
 	},
 	"dependencies": {
-		"saxes": "^6.0.0",
-		"slimdom": "^2.3.2"
+		"saxes": "6.0.0",
+		"slimdom": "3.0.1"
 	},
 	"devDependencies": {
-		"fontoxpath": "^3.21.0",
-		"tsdx": "^0.14.1",
-		"tslib": "^2.3.1",
-		"typescript": "^4.5.2"
+		"fontoxpath": "3.23.0",
+		"tsdx": "0.14.1",
+		"tslib": "2.3.1",
+		"typescript": "4.5.4"
 	},
-	"peerDependencies": {},
 	"prettier": {
 		"printWidth": 100,
 		"semi": true,

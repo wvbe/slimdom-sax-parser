@@ -1,7 +1,8 @@
-import { Element } from 'slimdom';
-import { Readable } from 'stream';
-import { async, sync, slimdom } from '../src/index';
-import { evaluateXPath, evaluateXPathToNodes } from 'fontoxpath';
+import { expect, it, run } from 'https://deno.land/x/tincan/mod.ts';
+import { Element } from 'https://esm.sh/slimdom@3.1.0';
+import { Readable } from 'https://deno.land/std@0.141.0/node/stream.ts';
+import { async, sync, slimdom } from '../src/index.ts';
+import { evaluateXPath, evaluateXPathToNodes } from 'https://esm.sh/fontoxpath@3.26.0';
 
 // Asserts that the code examples in README.md are correct
 
@@ -38,8 +39,8 @@ it('Transform a XML file', async () => {
 			return Readable.from(`<foo><bar /><bar /></foo>`);
 		},
 		promises: {
-			writeFile: async (_filePath: string, _content: string) => {}
-		}
+			writeFile: async (_filePath: string, _content: string) => {},
+		},
 	};
 
 	const filePath = './file.xml';
@@ -54,3 +55,5 @@ it('Transform a XML file', async () => {
 
 	await fs.promises.writeFile(filePath, slimdom.serializeToWellFormedString(document));
 });
+
+run();

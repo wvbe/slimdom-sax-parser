@@ -10,14 +10,12 @@ import {
 	SaxesAttributeNS,
 	SaxesOptions,
 	SaxesParser,
-	TextHandler
-} from 'saxes';
-import slimdom, { Document } from 'slimdom';
-import createNamespaceContext from './createNamespaceContext';
-import createPositionTracker, { Position, positionTrackerStubs } from './createPositionTracker';
-import { parseDoctypeDeclaration } from './parseDoctypeDeclaration';
-
-export { Document } from 'slimdom';
+	TextHandler,
+} from 'https://esm.sh/saxes@6.0.0';
+import { Document } from 'https://esm.sh/slimdom@3.1.0';
+import createNamespaceContext from './createNamespaceContext.ts';
+import createPositionTracker, { Position, positionTrackerStubs } from './createPositionTracker.ts';
+import { parseDoctypeDeclaration } from './parseDoctypeDeclaration.ts';
 
 type Handler = {
 	onText: TextHandler;
@@ -38,7 +36,7 @@ type Handler = {
 export default function createHandler(parser: SaxesParser, options: SaxesOptions): Handler {
 	// A new XML DOM object that has the same API as the browser DOM implementation, but isomorphic and supports
 	// namespaces.
-	const document = new slimdom.Document();
+	const document = new Document();
 
 	// The node into which new child nodes are inserted. Is rewritten as the handler traverses in and out of elements.
 	let contextNode: any = document;
@@ -51,14 +49,14 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 		trackNodeClosePosition,
 		updateLastTrackedPosition,
 		getCurrentPosition,
-		trackAttributePosition
+		trackAttributePosition,
 	} = options.position ? createPositionTracker(parser) : positionTrackerStubs;
 
 	let attributePositions: Map<string, Position> = new Map();
 
 	// Return a bunch of methods that can be applied directly to a saxes parser instance.
 	return {
-		onText: text => {
+		onText: (text) => {
 			if (contextNode === document) {
 				updateLastTrackedPosition();
 				return;
@@ -67,7 +65,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 			contextNode.appendChild(textNode);
 		},
 
-		onOpenTag: element => {
+		onOpenTag: (element) => {
 			// More namespace declarations might be applicable
 			if (element.ns) {
 				namespaces.push(element.ns);
@@ -79,7 +77,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 			const node = trackNodePosition(document.createElementNS(nsLocation, element.name));
 
 			Object.keys(element.attributes)
-				.map(name => element.attributes[name])
+				.map((name) => element.attributes[name])
 				.forEach((attr: string | SaxesAttributeNS) => {
 					if (typeof attr === 'string') {
 						// @TODO Find out why saxes sometimes uses strings instead of SaxesAttributeNs
@@ -98,7 +96,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 					const position = attributePositions.get(attr.name)!;
 					const attributeNode = trackAttributePosition(
 						document.createAttributeNS(namespaceURI!, attr.name),
-						position
+						position,
 					);
 					attributeNode.value = attr.value;
 					node.setAttributeNode(attributeNode);
@@ -112,7 +110,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 			attributePositions = new Map();
 		},
 
-		onAttribute: attribute => {
+		onAttribute: (attribute) => {
 			attributePositions.set(attribute.name, getCurrentPosition());
 		},
 
@@ -131,35 +129,29 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 			namespaces.pop();
 		},
 
-		onProcessingInstruction: pi => {
+		onProcessingInstruction: (pi) => {
 			contextNode.appendChild(
-				trackNodePosition(document.createProcessingInstruction(pi.target, pi.body))
+				trackNodePosition(document.createProcessingInstruction(pi.target, pi.body)),
 			);
 		},
 
-		onComment: comment => {
+		onComment: (comment) => {
 			contextNode.appendChild(trackNodePosition(document.createComment(comment)));
 		},
 
-		onDocType: data => {
-			const { qualifiedName, publicId, systemId } = parseDoctypeDeclaration(
-				`<!DOCTYPE ${data}>`
-			);
+		onDocType: (data) => {
+			const { qualifiedName, publicId, systemId } = parseDoctypeDeclaration(`<!DOCTYPE ${data}>`);
 			contextNode.appendChild(
 				trackNodePosition(
-					document.implementation.createDocumentType(
-						qualifiedName,
-						publicId || '',
-						systemId || ''
-					)
-				)
+					document.implementation.createDocumentType(qualifiedName, publicId || '', systemId || ''),
+				),
 			);
 		},
 
-		onCdata: string => {
+		onCdata: (string) => {
 			contextNode.appendChild(trackNodePosition(document.createCDATASection(string)));
 		},
 
-		document: document
+		document: document,
 	};
 }

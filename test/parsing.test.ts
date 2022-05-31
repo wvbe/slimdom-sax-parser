@@ -1,6 +1,7 @@
-import { evaluateXPath } from 'fontoxpath';
-import { DocumentType } from 'slimdom';
-import { sync } from '../src/index';
+import { expect, it, run } from 'https://deno.land/x/tincan/mod.ts';
+import { evaluateXPath } from 'https://esm.sh/fontoxpath@3.26.0';
+import { DocumentType } from 'https://esm.sh/slimdom@3.1.0';
+import { sync } from '../src/index.ts';
 
 const types = {
 	ELEMENT_NODE: 1,
@@ -14,7 +15,7 @@ const types = {
 	DOCUMENT_NODE: 9,
 	DOCUMENT_TYPE_NODE: 10,
 	DOCUMENT_FRAGMENT_NODE: 11,
-	NOTATION_NODE: 12
+	NOTATION_NODE: 12,
 };
 
 // fontoxpath playground:
@@ -33,8 +34,8 @@ const doc = sync(
 		`<a:next-sibling a:attr="AAA" />`,
 		`</a:root>`,
 		`<![CDATA[cdata]]>`,
-		`</root>`
-	].join('')
+		`</root>`,
+	].join(''),
 );
 
 it('doc types', () => {
@@ -96,3 +97,5 @@ it('XML declaration is not a processing instruction', () => {
 	const doc = sync(`<?xml version="1.0" encoding="UTF-8" standalone="no" ?><?derp ?><x />`);
 	expect((doc.firstChild as any)?.target).toBe('derp');
 });
+
+run();

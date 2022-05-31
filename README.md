@@ -74,7 +74,7 @@ Use with an XPath engine ([fontoxpath][fontoxpath-url]):
 
 ```js
 import { sync } from 'slimdom-sax-parser';
-import { evaluateXPath } from 'fontoxpath';
+import { evaluateXPath } from 'https://esm.sh/fontoxpath@3.26.0';
 
 const document = sync(`<foo><bar /><baz /></foo>`);
 const childNodeNames = evaluateXPath('/foo/*/name()', document);
@@ -103,7 +103,7 @@ Transform a XML file:
 ```js
 import fs from 'fs';
 import { async, slimdom } from 'slimdom-sax-parser';
-import { evaluateXPathToNodes } from 'fontoxpath';
+import { evaluateXPathToNodes } from 'https://esm.sh/fontoxpath@3.26.0';
 
 async function transform(filePath) {
 	const xmlStream = fs.createReadStream(filePath);

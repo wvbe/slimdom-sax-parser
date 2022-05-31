@@ -1,9 +1,9 @@
-import * as saxes from 'saxes';
-import { DEFAULT_OPTIONS, Options } from './options';
-import { Document } from 'slimdom';
-import { Readable } from 'stream';
+import * as saxes from 'https://esm.sh/saxes@6.0.0';
+import { Document } from 'https://esm.sh/slimdom@3.1.0';
+import { Readable } from 'https://deno.land/std@0.141.0/node/stream.ts';
 
-import createHandler from './createHandler';
+import { DEFAULT_OPTIONS, Options } from './options.ts';
+import createHandler from './createHandler.ts';
 
 /**
  * Asynchronously parse a string or readable stream of XML to a Slimdom document.
@@ -21,7 +21,7 @@ export function async(xml: string | Readable, options?: Options): Promise<Docume
 		parser.on('closetag', handler.onCloseTag);
 		parser.on('comment', handler.onComment);
 		parser.on('doctype', handler.onDocType);
-		parser.on('error', error => {
+		parser.on('error', (error) => {
 			reject(error);
 		});
 		parser.on('opentag', handler.onOpenTag);

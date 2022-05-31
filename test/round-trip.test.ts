@@ -1,5 +1,6 @@
-import { serializeToWellFormedString } from 'slimdom';
-import { sync } from '../src/index';
+import { describe, expect, it, run } from 'https://deno.land/x/tincan/mod.ts';
+import { serializeToWellFormedString } from 'https://esm.sh/slimdom@3.1.0';
+import { sync } from '../src/index.ts';
 
 function roundTrip(xml: string) {
 	return serializeToWellFormedString(sync(xml));
@@ -7,34 +8,34 @@ function roundTrip(xml: string) {
 
 describe('GitHub #7', () => {
 	// Disabled this, because the bug is fixed
-	xit('reproduced the issue', () => {
-		expect(
-			roundTrip(
-				`
-					<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "file:///W:/InfoShare/dita-oasis/1.2/technicalContent/dtd/concept.dtd"[]>
-					<xml/>
-				`.replace(/\n|\t/g, '')
-			)
-		).toBe(
-			`
-				<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" ""file:///W:/InfoShare/dita-oasis/1.2/technicalContent/dtd/concept.dtd"[]">
-				<xml/>
-			`.replace(/\n|\t/g, '')
-		);
-	});
+	// it('reproduced the issue', () => {
+	// 	expect(
+	// 		roundTrip(
+	// 			`
+	// 				<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "file:///W:/InfoShare/dita-oasis/1.2/technicalContent/dtd/concept.dtd"[]>
+	// 				<xml/>
+	// 			`.replace(/\n|\t/g, '')
+	// 		)
+	// 	).toBe(
+	// 		`
+	// 			<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" ""file:///W:/InfoShare/dita-oasis/1.2/technicalContent/dtd/concept.dtd"[]">
+	// 			<xml/>
+	// 		`.replace(/\n|\t/g, '')
+	// 	);
+	// });
 	it('fixed the issue', () => {
 		expect(
 			roundTrip(
 				`
 					<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "file:///W:/InfoShare/dita-oasis/1.2/technicalContent/dtd/concept.dtd"[]>
 					<xml/>
-				`.replace(/\n|\t/g, '')
-			)
+				`.replace(/\n|\t/g, ''),
+			),
 		).toBe(
 			`
 				<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "file:///W:/InfoShare/dita-oasis/1.2/technicalContent/dtd/concept.dtd">
 				<xml/>
-			`.replace(/\n|\t/g, '')
+			`.replace(/\n|\t/g, ''),
 		);
 	});
 });
@@ -54,3 +55,5 @@ it('Roundtripping a SYSTEM doctype', () => {
 	`.replace(/\n|\t/g, '');
 	expect(roundTrip(xml)).toBe(xml);
 });
+
+run();

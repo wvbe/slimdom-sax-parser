@@ -1,4 +1,5 @@
-import { sync } from '../src/index';
+import { expect, it, run } from 'https://deno.land/x/tincan/mod.ts';
+import { sync } from '../src/index.ts';
 
 const types = {
 	ELEMENT_NODE: 1,
@@ -90,3 +91,6 @@ it('Undefined namespaces will throw an error', () => {
 	expect(() => sync(`<boop:root nerf="pl" />`)).toThrow('unbound namespace prefix: "boop"');
 	expect(() => sync(`<root skeet:nerf="pl" />`)).toThrow('unbound namespace prefix: "skeet"');
 });
+
+
+run();

@@ -1,5 +1,6 @@
-import { evaluateXPath, evaluateXPathToNodes } from 'fontoxpath';
-import { sync, async } from '../src/index';
+import { describe, expect, it, run } from 'https://deno.land/x/tincan/mod.ts';
+import { evaluateXPath, evaluateXPathToNodes } from 'https://esm.sh/fontoxpath@3.26.0';
+import { sync, async } from '../src/index.ts';
 
 // Make the tests STFU
 type PositionTrackedNode = any;
@@ -20,7 +21,7 @@ describe('doc types', () => {
 	const xml = `<!DOCTYPE test PUBLIC "test" "test"><x />`;
 	const doc = sync(xml, { position: true });
 
-	test('the doctype declaration', () => {
+	it('the doctype declaration', () => {
 		const context = doc.firstChild as PositionTrackedNode;
 		const contextXml = `<!DOCTYPE test PUBLIC "test" "test">`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -31,7 +32,7 @@ describe('doc types', () => {
 		expect(context.closePosition).toBeUndefined();
 	});
 
-	test('the successive element', () => {
+	it('the successive element', () => {
 		const context = doc?.firstChild?.nextSibling as PositionTrackedNode;
 		const contextXml = `<x />`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -40,7 +41,7 @@ describe('doc types', () => {
 		expect(context.position.line).toBe(1);
 		expect(context.position.column).toBe(37);
 		expect(stringForFullElementPosition(xml, context.position, context.closePosition)).toBe(
-			contextXml
+			contextXml,
 		);
 		expect(context.closePosition.start).toBe(41);
 		expect(context.closePosition.end).toBe(41);
@@ -53,7 +54,7 @@ describe('processing instructions', () => {
 	const xml = `<?pi-target pi-data?><x />`;
 	const doc = sync(xml, { position: true });
 
-	test('the processing instruction', () => {
+	it('the processing instruction', () => {
 		const context = evaluateXPath('/processing-instruction()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<?pi-target pi-data?>`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -64,7 +65,7 @@ describe('processing instructions', () => {
 		expect(context.closePosition).toBeUndefined();
 	});
 
-	test('the successive element', () => {
+	it('the successive element', () => {
 		const context = evaluateXPath('/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<x />`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -73,7 +74,7 @@ describe('processing instructions', () => {
 		expect(context.position.line).toBe(1);
 		expect(context.position.column).toBe(22);
 		expect(stringForFullElementPosition(xml, context.position, context.closePosition)).toBe(
-			contextXml
+			contextXml,
 		);
 		expect(context.closePosition.start).toBe(26);
 		expect(context.closePosition.end).toBe(26);
@@ -83,7 +84,7 @@ describe('processing instructions', () => {
 
 	const xml2 = `<!DOCTYPE test PUBLIC "test" "test"><?pi-test    ?><x />`;
 	const doc2 = sync(xml2, { position: true });
-	test('processing instruction in the middle', () => {
+	it('processing instruction in the middle', () => {
 		const context = evaluateXPath('/processing-instruction()[1]', doc2) as PositionTrackedNode;
 		const contextXml = `<?pi-test    ?>`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
@@ -123,9 +124,9 @@ it('comments', () => {
 	// expect(firstElement.position.column).toBe(17);
 	expect(stringForPosition(xml, firstElement.position)).toBe(`<x />`);
 	expect(stringForPosition(xml, firstElement.closePosition)).toBe('');
-	expect(
-		stringForFullElementPosition(xml, firstElement.position, firstElement.closePosition)
-	).toBe('<x />');
+	expect(stringForFullElementPosition(xml, firstElement.position, firstElement.closePosition)).toBe(
+		'<x />',
+	);
 });
 
 describe('elements', () => {
@@ -133,7 +134,7 @@ describe('elements', () => {
 		sk="z"><self-closing unit="" /></root-node>`;
 	const doc = sync(xml, { position: true });
 
-	test('the root element instruction', () => {
+	it('the root element instruction', () => {
 		const context = evaluateXPath('/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<root-node nerf="derp"
 		sk="z">`;
@@ -142,16 +143,14 @@ describe('elements', () => {
 		expect(context.position.end).toBe(32);
 		expect(context.position.line).toBe(1);
 		expect(context.position.column).toBe(1);
-		expect(stringForFullElementPosition(xml, context.position, context.closePosition)).toBe(
-			xml
-		);
+		expect(stringForFullElementPosition(xml, context.position, context.closePosition)).toBe(xml);
 		expect(context.closePosition.start).toBe(56);
 		expect(context.closePosition.end).toBe(68);
 		expect(context.closePosition.line).toBe(2);
 		expect(context.closePosition.column).toBe(34);
 	});
 
-	test('the child element', () => {
+	it('the child element', () => {
 		const context = evaluateXPath('/element()[1]/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<self-closing unit="" />`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -160,7 +159,7 @@ describe('elements', () => {
 		expect(context.position.line).toBe(2);
 		expect(context.position.column).toBe(10);
 		expect(stringForFullElementPosition(xml, context.position, context.closePosition)).toBe(
-			contextXml
+			contextXml,
 		);
 		expect(context.closePosition.start).toBe(56);
 		expect(context.closePosition.end).toBe(56);
@@ -171,7 +170,7 @@ describe('elements', () => {
 	// This would fail if the closing tags of elements were not tracked in onCloseTag
 	const xml2 = `<x><a></a><b /><c></c></x>`;
 	const doc2 = sync(xml2, { position: true });
-	test('another child element', () => {
+	it('another child element', () => {
 		const context = evaluateXPath('/*/a', doc2) as PositionTrackedNode;
 		const contextXml = `<a>`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
@@ -180,14 +179,14 @@ describe('elements', () => {
 		expect(context.position.line).toBe(1);
 		expect(context.position.column).toBe(4);
 		expect(stringForFullElementPosition(xml2, context.position, context.closePosition)).toBe(
-			`<a></a>`
+			`<a></a>`,
 		);
 		expect(context.closePosition.start).toBe(6);
 		expect(context.closePosition.end).toBe(10);
 		expect(context.closePosition.line).toBe(1);
 		expect(context.closePosition.column).toBe(7);
 	});
-	test('a self-closing element', () => {
+	it('a self-closing element', () => {
 		const context = evaluateXPath('/*/b', doc2) as PositionTrackedNode;
 		const contextXml = `<b />`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
@@ -196,14 +195,14 @@ describe('elements', () => {
 		expect(context.position.line).toBe(1);
 		expect(context.position.column).toBe(11);
 		expect(stringForFullElementPosition(xml2, context.position, context.closePosition)).toBe(
-			contextXml
+			contextXml,
 		);
 		expect(context.closePosition.start).toBe(15);
 		expect(context.closePosition.end).toBe(15);
 		expect(context.closePosition.line).toBe(1);
 		expect(context.closePosition.column).toBe(16);
 	});
-	test('another child element #2', () => {
+	it('another child element #2', () => {
 		const context = evaluateXPath('/*/c', doc2) as PositionTrackedNode;
 		const contextXml = `<c>`;
 		expect(stringForPosition(xml2, context.position)).toBe(contextXml);
@@ -212,7 +211,7 @@ describe('elements', () => {
 		expect(context.position.line).toBe(1);
 		expect(context.position.column).toBe(16);
 		expect(stringForFullElementPosition(xml2, context.position, context.closePosition)).toBe(
-			`<c></c>`
+			`<c></c>`,
 		);
 		expect(context.closePosition.start).toBe(18);
 		expect(context.closePosition.end).toBe(22);
@@ -233,7 +232,7 @@ it('attributes', () => {
 
 	const [test1, test2, test3, test4, test5, test6, test7] = evaluateXPathToNodes(
 		'/*/attribute()',
-		doc
+		doc,
 	) as PositionTrackedNode;
 
 	expect(test1.value).toBe('val1');
@@ -292,9 +291,7 @@ it('text nodes', () => {
 
 	expect(stringForPosition(xml, evaluateXPath('/*/*/text()[1]', doc).position)).toBe(`textC`);
 
-	expect(stringForPosition(xml, evaluateXPath('/comment()', doc).position)).toBe(
-		`<!--EOF test-->`
-	);
+	expect(stringForPosition(xml, evaluateXPath('/comment()', doc).position)).toBe(`<!--EOF test-->`);
 	expect(evaluateXPath('/comment()', doc).closePosition).toBeUndefined();
 });
 
@@ -335,18 +332,18 @@ describe('Various things in a messy XML file', () => {
 	const doc = sync(xml, { position: true });
 
 	// KNOWN ISSUE the xml declaration is not picked up as a child node!
-	xtest('the doctype declaration', () => {
-		const context = doc.childNodes[1] as PositionTrackedNode;
-		const contextXml = `<!DOCTYPE test PUBLIC "test" "test">`;
-		expect(stringForPosition(xml, context.position)).toBe(contextXml);
-		expect(context.position.start).toBe(25);
-		expect(context.position.end).toBe(51);
-		expect(context.position.line).toBe(3);
-		expect(context.position.column).toBe(3);
-		expect(context.closePosition).toBeUndefined();
-	});
+	// it('the doctype declaration', () => {
+	// 	const context = doc.childNodes[1] as PositionTrackedNode;
+	// 	const contextXml = `<!DOCTYPE test PUBLIC "test" "test">`;
+	// 	expect(stringForPosition(xml, context.position)).toBe(contextXml);
+	// 	expect(context.position.start).toBe(25);
+	// 	expect(context.position.end).toBe(51);
+	// 	expect(context.position.line).toBe(3);
+	// 	expect(context.position.column).toBe(3);
+	// 	expect(context.closePosition).toBeUndefined();
+	// });
 
-	test('the comment', () => {
+	it('the comment', () => {
 		const context = evaluateXPath('/comment()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<!-- multi-line
 		comment -->`;
@@ -358,7 +355,7 @@ describe('Various things in a messy XML file', () => {
 		expect(context.closePosition).toBeUndefined();
 	});
 
-	test('the root element', () => {
+	it('the root element', () => {
 		const context = evaluateXPath('/element()[1]', doc) as PositionTrackedNode;
 		const contextXml = `<root attr="val">`;
 		expect(stringForPosition(xml, context.position)).toBe(contextXml);
@@ -368,7 +365,7 @@ describe('Various things in a messy XML file', () => {
 		// expect(context.position.column).toBe(3);
 	});
 
-	test('a multi-line child element', () => {
+	it('a multi-line child element', () => {
 		const context = evaluateXPath('/element()[1]/element()[2]', doc) as PositionTrackedNode;
 		const contextXml = `<a:root xmlns="http://default"
 			xmlns:a="http://a"
@@ -386,7 +383,7 @@ describe('Various things in a messy XML file', () => {
 			<a:child xmlns:c="http://a" xmlns:a="http://b" c:attr="A" a:attr="B" d:attr="d" attr="def" />
 			snapje
 			<a:next-sibling a:attr="AAA" />
-		</a:root>`
+		</a:root>`,
 		);
 		expect(context.closePosition.start).toBe(471);
 		expect(context.closePosition.end).toBe(480);
@@ -394,7 +391,7 @@ describe('Various things in a messy XML file', () => {
 		expect(context.closePosition.column).toBe(3);
 	});
 
-	test('a multi-line text node', () => {
+	it('a multi-line text node', () => {
 		const context = evaluateXPath('//Q{http://a}root/text()[2]', doc) as PositionTrackedNode;
 		const contextXml = `
 			snapje
@@ -407,10 +404,10 @@ describe('Various things in a messy XML file', () => {
 		expect(context.closePosition).toBeUndefined();
 	});
 
-	test('text with encoded entities', () => {
+	it('text with encoded entities', () => {
 		const context = evaluateXPath(
 			'//element()[1]/element()[3]/text()[1]',
-			doc
+			doc,
 		) as PositionTrackedNode;
 		const contextXml = `
 			Encode &lt;entities&gt;
@@ -432,3 +429,5 @@ it('No position property if not tracking', () => {
 	expect((doc.documentElement as any).position).toBeUndefined();
 	expect((doc.documentElement as any).closePosition).toBeUndefined();
 });
+
+run();

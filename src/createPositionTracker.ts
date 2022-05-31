@@ -1,5 +1,5 @@
-import { SaxesParser } from 'saxes';
-import { Attr, Node } from 'slimdom';
+import { SaxesParser } from 'https://esm.sh/saxes@6.0.0';
+import { Attr, Node } from 'https://esm.sh/slimdom@3.1.0';
 
 /**
  * The helper functions to track node positions.
@@ -61,7 +61,7 @@ const types = {
 	// ENTITY_REFERENCE_NODE: 5,
 	// ENTITY_NODE: 6,
 	// PROCESSING_INSTRUCTION_NODE: 7,
-	COMMENT_NODE: 8
+	COMMENT_NODE: 8,
 	// DOCUMENT_NODE: 9,
 	// DOCUMENT_TYPE_NODE: 10,
 	// DOCUMENT_FRAGMENT_NODE: 11,
@@ -79,7 +79,7 @@ export default function createPositionTracker(parser: SaxesParser): PositionTrac
 		column: 1,
 
 		// Offset (start + end) are 0-based
-		offset: 0
+		offset: 0,
 	};
 
 	function updateLastTrackedPosition(): void {
@@ -92,7 +92,7 @@ export default function createPositionTracker(parser: SaxesParser): PositionTrac
 		const position = {
 			offset: parser.position,
 			line: parser.line,
-			column: parser.column + 1
+			column: parser.column + 1,
 		};
 
 		if (!node) {
@@ -124,7 +124,7 @@ export default function createPositionTracker(parser: SaxesParser): PositionTrac
 			line: lastTrackedPosition.line,
 			column: lastTrackedPosition.column,
 			start: lastTrackedPosition.offset,
-			end: endPosition.offset
+			end: endPosition.offset,
 		};
 
 		lastTrackedPosition = endPosition;
@@ -139,7 +139,7 @@ export default function createPositionTracker(parser: SaxesParser): PositionTrac
 			line: lastTrackedPosition.line,
 			column: lastTrackedPosition.column,
 			start: lastTrackedPosition.offset,
-			end: endPosition.offset
+			end: endPosition.offset,
 		};
 
 		lastTrackedPosition = endPosition;
@@ -149,10 +149,10 @@ export default function createPositionTracker(parser: SaxesParser): PositionTrac
 
 	function trackAttributePosition<A extends Attr>(
 		attr: A,
-		endPosition: Position
+		endPosition: Position,
 	): PositionTrackedAttr<A> {
 		(attr as PositionTrackedAttr<A>).position = {
-			end: endPosition.offset
+			end: endPosition.offset,
 		};
 
 		return attr as PositionTrackedAttr<A>;
@@ -163,7 +163,7 @@ export default function createPositionTracker(parser: SaxesParser): PositionTrac
 		trackAttributePosition,
 		trackNodeClosePosition,
 		trackNodePosition,
-		updateLastTrackedPosition
+		updateLastTrackedPosition,
 	};
 }
 
@@ -175,5 +175,5 @@ export const positionTrackerStubs: PositionTracker = {
 	trackAttributePosition: (attr?: any) => attr,
 	trackNodeClosePosition: (node?: any) => node,
 	trackNodePosition: (node?: any) => node,
-	updateLastTrackedPosition: () => {}
+	updateLastTrackedPosition: () => {},
 };

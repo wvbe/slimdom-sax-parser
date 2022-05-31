@@ -1,3 +1,4 @@
+import { expect, it, run } from 'https://deno.land/x/tincan/mod.ts';
 /* eslint-env jest */
 
 import {
@@ -6,11 +7,11 @@ import {
 	Document,
 	DocumentType,
 	Element,
-	ProcessingInstruction
-} from 'slimdom';
-import { PositionTrackedNode } from '../src/createPositionTracker';
-import { Readable } from 'stream';
-import { async, sync } from '../src/index';
+	ProcessingInstruction,
+} from 'https://esm.sh/slimdom@3.1.0';
+import { PositionTrackedNode } from '../src/createPositionTracker.ts';
+import { Readable } from 'https://deno.land/std@0.141.0/node/stream.ts';
+import { async, sync } from '../src/index.ts';
 
 const INPUT_LINES = [
 	// Note that the following line is an XML version declaration. Not a PI (https://github.com/isaacs/sax-js/issues/178)
@@ -25,7 +26,7 @@ const INPUT_LINES = [
 	'<a:next-sibling a:attr="AAA" />',
 	'</a:root>',
 	'<![CDATA[cdata]]>',
-	'</root>'
+	'</root>',
 ];
 
 function checkOutputDocument(doc: Document) {
@@ -48,31 +49,31 @@ function checkOutputDocument(doc: Document) {
 
 	subject = subject.nextSibling!;
 	expect(subject.nodeName).toBe('a:root');
-	expect((subject as Element).attributes.map(a => `${a.name}="${a.value}"`)).toEqual([
+	expect((subject as Element).attributes.map((a) => `${a.name}="${a.value}"`)).toEqual([
 		'xmlns="http://default"',
 		'xmlns:a="http://a"',
 		'xmlns:b="http://b"',
 		'xmlns:d="http://d"',
 		'a:attr="A"',
 		'b:attr="B"',
-		'attr="def"'
+		'attr="def"',
 	]);
 
 	subject = subject.firstChild!;
 	expect(subject.nodeName).toBe('a:child');
-	expect((subject as Element).attributes.map(a => `${a.name}="${a.value}"`)).toEqual([
+	expect((subject as Element).attributes.map((a) => `${a.name}="${a.value}"`)).toEqual([
 		'xmlns:c="http://a"',
 		'xmlns:a="http://b"',
 		'c:attr="A"',
 		'a:attr="B"',
 		'd:attr="d"',
-		'attr="def"'
+		'attr="def"',
 	]);
 
 	subject = subject.nextSibling!;
 	expect(subject.nodeName).toBe('a:next-sibling');
-	expect((subject as Element).attributes.map(a => `${a.name}="${a.value}"`)).toEqual([
-		'a:attr="AAA"'
+	expect((subject as Element).attributes.map((a) => `${a.name}="${a.value}"`)).toEqual([
+		'a:attr="AAA"',
 	]);
 
 	subject = subject.parentNode!.nextSibling!;
@@ -98,7 +99,7 @@ it('Can asynchronously parse a Readable stream', async () => {
 
 it('Throws when trying to asynchronously parse xml with text outside the root node', async () => {
 	await expect((() => async(`skeet<x />skrrrr`))()).rejects.toThrow(
-		'text data outside of root node'
+		'text data outside of root node',
 	);
 });
 
@@ -107,9 +108,9 @@ it('Honors options in when asynchronously parsing xml', async () => {
 	const xml = Readable.from(xmlContent);
 	const doc = await async(xml, {
 		additionalEntities: {
-			test1: 'test completed'
+			test1: 'test completed',
 		},
-		position: true
+		position: true,
 	});
 
 	const context = doc.firstChild;
@@ -121,3 +122,5 @@ it('Honors options in when asynchronously parsing xml', async () => {
 	expect(position.line).toBe(1);
 	expect(position.column).toBe(1);
 });
+
+run();

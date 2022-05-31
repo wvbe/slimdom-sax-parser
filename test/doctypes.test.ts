@@ -1,5 +1,5 @@
-import { parseDoctypeDeclaration } from '../src/parseDoctypeDeclaration';
-
+import { expect, it, run } from 'https://deno.land/x/tincan/mod.ts';
+import { parseDoctypeDeclaration } from '../src/parseDoctypeDeclaration.ts';
 it('Can parse a PUBLIC doctype', () => {
 	expect(
 		parseDoctypeDeclaration(
@@ -36,3 +36,5 @@ it('Can parse a PUBLIC doctype with an empty internal subsets declaration', () =
 		systemId: 'file:///W:/InfoShare/dita-oasis/1.2/technicalContent/dtd/concept.dtd'
 	});
 });
+
+run();

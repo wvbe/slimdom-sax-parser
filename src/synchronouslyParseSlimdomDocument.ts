@@ -1,7 +1,7 @@
-import * as saxes from 'saxes';
-import { DEFAULT_OPTIONS, Options } from './options';
+import * as saxes from 'https://esm.sh/saxes@6.0.0';
 
-import createHandler from './createHandler';
+import { DEFAULT_OPTIONS, Options } from './options.ts';
+import createHandler from './createHandler.ts';
 
 /**
  * Synchronously parse a string of XML to a Slimdom document.

@@ -12,12 +12,10 @@ import {
 	SaxesParser,
 	TextHandler
 } from 'saxes';
-import slimdom, { Document } from 'slimdom';
+import { Document } from 'slimdom';
 import createNamespaceContext from './createNamespaceContext';
 import createPositionTracker, { Position, positionTrackerStubs } from './createPositionTracker';
 import { parseDoctypeDeclaration } from './parseDoctypeDeclaration';
-
-export { Document } from 'slimdom';
 
 type Handler = {
 	onText: TextHandler;
@@ -38,7 +36,7 @@ type Handler = {
 export default function createHandler(parser: SaxesParser, options: SaxesOptions): Handler {
 	// A new XML DOM object that has the same API as the browser DOM implementation, but isomorphic and supports
 	// namespaces.
-	const document = new slimdom.Document();
+	const document = new Document();
 
 	// The node into which new child nodes are inserted. Is rewritten as the handler traverses in and out of elements.
 	let contextNode: any = document;

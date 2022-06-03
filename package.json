@@ -1,6 +1,6 @@
 {
 	"name": "slimdom-sax-parser",
-	"version": "1.5.1",
+	"version": "1.5.2",
 	"description": "Parse an XML string to a light-weight spec-compliant document object model, for browser and Node",
 	"repository": "wvbe/slimdom-sax-parser",
 	"author": {
@@ -26,7 +26,7 @@
 		"dom"
 	],
 	"main": "dist/index.js",
-	"module": "dist/slimdom-sax-parser-ts.esm.js",
+	"module": "dist/slimdom-sax-parser.esm.js",
 	"typings": "dist/index.d.ts",
 	"scripts": {
 		"start": "tsdx watch",

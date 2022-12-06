@@ -1,6 +1,6 @@
 import * as saxes from 'saxes';
 import { DEFAULT_OPTIONS, Options } from './options';
-import { Document } from 'slimdom';
+import { Document, DocumentFragment } from 'slimdom';
 import { Readable } from 'stream';
 
 import createHandler from './createHandler';
@@ -8,7 +8,10 @@ import createHandler from './createHandler';
 /**
  * Asynchronously parse a string or readable stream of XML to a Slimdom document.
  */
-export function async(xml: string | Readable, options?: Options): Promise<Document> {
+export function async(
+	xml: string | Readable,
+	options?: Options
+): Promise<Document | DocumentFragment> {
 	return new Promise((resolve, reject) => {
 		// Set up the sax parser
 		const mergedOptions = { ...DEFAULT_OPTIONS, ...options };

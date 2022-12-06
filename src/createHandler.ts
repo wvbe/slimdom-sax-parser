@@ -12,9 +12,13 @@ import {
 	SaxesParser,
 	TextHandler
 } from 'saxes';
-import { Document } from 'slimdom';
+import { Document, DocumentFragment, Node } from 'slimdom';
 import createNamespaceContext from './createNamespaceContext';
-import createPositionTracker, { Position, positionTrackerStubs } from './createPositionTracker';
+import createPositionTracker, {
+	Position,
+	PositionTrackedNode,
+	positionTrackerStubs
+} from './createPositionTracker';
 import { parseDoctypeDeclaration } from './parseDoctypeDeclaration';
 
 type Handler = {
@@ -27,7 +31,7 @@ type Handler = {
 	onComment: CommentHandler;
 	onDocType: DoctypeHandler;
 	onCdata: CDataHandler;
-	document: Document;
+	document: Document | DocumentFragment;
 };
 
 /*
@@ -37,9 +41,9 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 	// A new XML DOM object that has the same API as the browser DOM implementation, but isomorphic and supports
 	// namespaces.
 	const document = new Document();
-
+	const root = options.fragment ? document.createDocumentFragment() : document;
 	// The node into which new child nodes are inserted. Is rewritten as the handler traverses in and out of elements.
-	let contextNode: any = document;
+	let contextNode: Node | PositionTrackedNode<Node> = root;
 
 	// Helpers for other responsibilities
 	const namespaces = createNamespaceContext(options.additionalNamespaces || {});
@@ -116,7 +120,7 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 
 		onCloseTag: () => {
 			// Update position tracking so that the closing tag of an element is not prepended to the following sibling
-			trackNodeClosePosition(contextNode);
+			trackNodeClosePosition(contextNode as PositionTrackedNode<Node>);
 
 			if (!contextNode.parentNode) {
 				throw new Error('End of the line!');
@@ -158,6 +162,6 @@ export default function createHandler(parser: SaxesParser, options: SaxesOptions
 			contextNode.appendChild(trackNodePosition(document.createCDATASection(string)));
 		},
 
-		document: document
+		document: root
 	};
 }

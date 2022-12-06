@@ -41,7 +41,9 @@ function sync(
 ): slimdom.Document;
 ```
 
-See also [saxes.SaxesOptions](https://www.npmjs.com/package/saxes#parsing-xml-fragments) and the [standard DOM API](https://dom.spec.whatwg.org/#interface-document).
+See also [saxes.SaxesOptions](https://www.npmjs.com/package/saxes#parsing-xml-fragments). Contrary to `saxes`, XML namespaces (the `xmlns` option) are enabled by default.
+
+See also the [standard DOM API](https://dom.spec.whatwg.org/#interface-document), which is the interface implemented by `slimdom`.
 
 ## Usage
 
